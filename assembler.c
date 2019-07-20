@@ -80,9 +80,9 @@ void analyze_line(symbol_table *table_of_symbol, tokenized_line *t){
         return;
     }
     if(str_ends_with(token, colon)){
-        printf("ther is lable in this line\n");
+        printf("there is label in this line\n");
         if(is_exist_in_symbol_table(table_of_symbol, token) == 0){// remove colon from token!!!
-            printf("Error, %s already exsist in symbol table\n", token);
+            printf("Error, %s already exist in symbol table\n", token);
             exit(1);
         }
         char *token2 = t->tokens[1]; 
