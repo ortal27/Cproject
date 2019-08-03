@@ -400,7 +400,6 @@ binary_code_table* create_binary_table_based_on_row(binary_code * code, tokenize
                 code_binary = create_binary_code(NULL, "000", trans_register_to_binary(t->tokens[i]),"00", NULL);
                 num_operand++;
             }
-            printf("5s\n", binary_to_string_first_word(code_binary));
             add_row_to_binary_code_table(b_table, code_binary);          
         }
         else{
@@ -421,7 +420,7 @@ binary_code_table* create_binary_table_based_on_row(binary_code * code, tokenize
                     code_binary2 = create_binary_code(NULL, NULL, NULL, "are", bin);
                 }else{ // is a symbol
                     if(is_exist_in_symbol_table(table_of_symbol, index) == 0){
-                        char *address = int_to_binary(12, symbol_address(table_of_symbol, curr));
+                        char *address = int_to_binary(12, symbol_address(table_of_symbol, index));
                         code_binary2 = create_binary_code(NULL, NULL, NULL, "00", address);
                     }else{
                         printf("Erorr! no such symbol.\n");
@@ -429,7 +428,11 @@ binary_code_table* create_binary_table_based_on_row(binary_code * code, tokenize
                     }
                 }
                 add_row_to_binary_code_table(b_table, code_binary1);
+                printf("Adding code 1 %s\n", binary_to_string_first_word(code_binary1));
+
                 add_row_to_binary_code_table(b_table, code_binary2);
+                printf("Adding code 2%s\n", binary_to_string_first_word(code_binary2));
+
             }
             else{
                 num_operand++;
@@ -685,7 +688,7 @@ int main(int argc, char* argv[]){
     
     
     analyze_line(operations_table, table_of_symbols, split(input1), IC, DC, input1);
-     //analyze_line(operations_table, table_of_symbols, split(input2), IC, DC);
+     analyze_line(operations_table, table_of_symbols, split(input2), IC, DC, input2);
     // analyze_line(operations_table, table_of_symbols, split(input3), IC, DC);
     // analyze_line(operations_table, table_of_symbols, split(input4), IC, DC);
     // analyze_line(operations_table, table_of_symbols, split(input5), IC, DC);
@@ -693,7 +696,7 @@ int main(int argc, char* argv[]){
      analyze_line(operations_table, table_of_symbols, split(input9), IC, DC, input9);
     // analyze_line(operations_table, table_of_symbols, split(input10), IC, DC);
 
-//     print_symbol_table(table_of_symbols);
+    print_symbol_table(table_of_symbols);
     print_table_of_operations(operations_table);
 //    //printf("the binary code for num 2 is: %s\n", convert_to_binary(1));
 //     int size_IC = (*IC) - 100;

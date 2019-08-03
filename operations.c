@@ -40,11 +40,15 @@ void add_row_to_binary_code_table(binary_code_table *binary_table, binary_code *
     if (binary_table->binary_code == NULL) {
         binary_table->binary_code = (binary_code**)malloc(sizeof(binary_code*));
     }
-
-    if(binary_table->binary_code[binary_table->size] == NULL){
+    // } else {
+    //     int nextSize = sizeof(binary_code*) * (binary_table->size+1);
+    //     binary_table->binary_code = (binary_code**)realloc(binary_table->binary_code, nextSize);
+    // }
+    
+    // if(binary_table->binary_code[binary_table->size] == NULL){
         binary_table->binary_code[binary_table->size] = binary_row;
         binary_table->size++;
-    }
+    // }
 }
 
 binary_code_table* create_binary_code_row(binary_code **binary_code, int size){
@@ -87,6 +91,13 @@ char* binary_to_string_first_word(binary_code *code){
         sprintf(buffer, "%s00", code->address);    
     } else if(are == NULL){
             sprintf(buffer, "EMPTY_CODE");    
+    }
+    else if ( strcmp(are, "00") == 0 ) {
+        if(op_code == NULL) {
+            sprintf(buffer, "000000%s%s%s",operand_origin, operand_dest, are);    
+        } else {
+            sprintf(buffer, "0000%s%s%s%s", op_code, operand_origin, operand_dest, are);    
+        }
     } else {
         sprintf(buffer, "0000%s%s%s%s", op_code, operand_origin, operand_dest, are);    
     }
