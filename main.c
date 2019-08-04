@@ -25,6 +25,12 @@ char *registers[8] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
 
 char *register_to_binary[8] = { "000", "001", "010", "011", "100", "101", "110", "111"};
 
+typedef struct {
+    int *decimal_address;
+    binary_code *binary_code;
+    char *explanation;
+} non_complete_op_row;
+
 /****************** declerations ***********************************************************************/
 void analyze_line(table_of_operations *table ,symbol_table *table_of_symbol, tokenized_line *t, int *IC, int *DC, char *soruce);
 char* remove_colon(char string);
@@ -207,7 +213,7 @@ void act_on_istruction_line(int *IC, tokenized_line *t, table_of_operations *tab
     {
         add_row_to_decimal_table(d_table, 0); // TODO: understand whas is this number;
     }
-    add_row_to_table_of_operations(table, create_operation_row(d_table, source, b_table));
+    add_row_to_table_of_operations(table, create_operation_row(d_table, source, b_table, create_explanation_table()));
     
 }
 
@@ -240,7 +246,7 @@ void act_on_directive_line(int *DC,tokenized_line *t, table_of_operations *table
                         d_table->size = 0;
                         d_table->decimal_address = NULL;
                         add_row_to_decimal_table(d_table, 0);
-                        operation_row *data_line = create_operation_row(d_table, "", b_table);
+                        operation_row *data_line = create_operation_row(d_table, "", b_table, create_explanation_table());
                         add_row_to_table_of_operations(table, data_line);
                         (*DC)++; 
                     }
@@ -265,7 +271,7 @@ void act_on_directive_line(int *DC,tokenized_line *t, table_of_operations *table
                         d_table->size = 0;
                         d_table->decimal_address = NULL;
                         add_row_to_decimal_table(d_table, 0);
-                        operation_row *data_line = create_operation_row(d_table, "", b_table);
+                        operation_row *data_line = create_operation_row(d_table, "", b_table, create_explanation_table());
                         add_row_to_table_of_operations(table, data_line);
                         (*DC)++; 
                     } 

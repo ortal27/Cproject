@@ -4,7 +4,7 @@
 
 #include "operations.h"
 
-operation_row* create_operation_row(decimal_table *d_table, char* sourse_code, binary_code_table *b_table){
+operation_row* create_operation_row(decimal_table *d_table, char* sourse_code, binary_code_table *b_table, explanation_table *e_table){
     operation_row *new_row;
     new_row = (operation_row*)malloc(sizeof(operation_row));
     if(!new_row){
@@ -117,7 +117,9 @@ void print_table_of_operations(table_of_operations *table_of_operations){
         {   
             char *code = binary_to_string_first_word(table_of_operations->rows[i]->binary_code_table->binary_code[j]);
             int decimal_addr = table_of_operations->rows[i]->decimal_table->decimal_address[j];
-            printf("Decimal Addr: %d -- Binary Machine Code: %s\n", decimal_addr, code);            
+            // char *explanation = table_of_operations->rows[i]->explanation_table->explanations[j];
+            char *explanation = "Not data yet";
+            printf("Decimal Addr: %d -- Explanation: %s -- Binary Machine Code: %s\n", decimal_addr,explanation, code);            
         }
 
         // if(strcmp(explan, "First_word") == 0){
@@ -146,4 +148,24 @@ void add_row_to_decimal_table(decimal_table *decimal_table, int decimal_address)
         decimal_table->decimal_address[decimal_table->size] = decimal_address;
         decimal_table->size++;
     }
+}
+
+void add_row_to_explanation_table(explanation_table *explanation_table, char *explanation){
+       if (explanation_table->explanations == NULL) {
+        explanation_table->explanations = (char**)malloc(sizeof(char*));
+    } else {
+        int nextSize = sizeof(char*) * (explanation_table->size+1);
+        explanation_table->explanations = (char**)realloc(explanation_table->explanations, nextSize);
+    }
+    if(explanation_table->explanations[explanation_table->size] == 0){
+        explanation_table->explanations[explanation_table->size] = explanation;
+        explanation_table->size++;
+    }
+}
+
+explanation_table *create_explanation_table(){
+    explanation_table *table = (explanation_table*)malloc(sizeof(explanation_table));
+    table->size  =0;
+    table->explanations = NULL;
+    return table;
 }
