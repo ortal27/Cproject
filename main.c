@@ -39,7 +39,7 @@ int is_register(char *string);
 char* trans_opcode_to_binary(char *code);
 char* trans_register_to_binary(char *code);
 
-void analyze_line_secondly(table_of_operations *table, binary_code_table *code_binary, symbol_table *table_of_symbol, tokenized_line *t, int *IC, int *DC);
+void analyze_line_secondly(table_of_operations *table, symbol_table *table_of_symbol, tokenized_line *t, int *IC, int *DC);
 binary_code_table* create_binary_table_based_on_row(binary_code * code, tokenized_line *t, symbol_table *table_of_symbol);
 char* method_addressing(symbol_table *table_of_symbol, char *string);
 char* int_to_binary(int buffer_size, int value);
@@ -286,7 +286,7 @@ void act_on_directive_line(int *DC,tokenized_line *t, table_of_operations *table
     }// end for
 }
 /* 
-void analyze_line_secondly(table_of_operations *table, binary_code_table *code_binary, symbol_table *table_of_symbol, tokenized_line *t, int *IC, int *DC){
+void analyze_line_secondly(table_of_operations *table, symbol_table *table_of_symbol, tokenized_line *t, int *IC, int *DC){
 
 
     int size = t->size;
@@ -367,7 +367,7 @@ binary_code_table* create_binary_table_based_on_row(binary_code * code, tokenize
      //initiate table of binary code
     binary_code_table *b_table = (binary_code_table*)malloc(sizeof(binary_code_table));
     b_table->size = 0;
-    b_table->binary_code = NULL;
+    // b_table->binary_code = NULL;
     int num_operand = 0;
 
     add_row_to_binary_code_table(b_table, code);
@@ -640,11 +640,6 @@ FILE* read(char *path) {
 }
 
 int main(int argc, char* argv[]){
-
-    //initiate table of binary code
-    binary_code_table *code_binary = (binary_code_table*)malloc(sizeof(binary_code_table));
-    code_binary->size = 0;
-    code_binary->binary_code = NULL;
 
     //initiate table of operations
     table_of_operations *operations_table = (table_of_operations*)malloc(sizeof(table_of_operations));

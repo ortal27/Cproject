@@ -11,7 +11,7 @@ typedef struct{
 
 
 typedef struct {
-    binary_code **binary_code;
+    binary_code *binary_code[10];
     int size;
 } binary_code_table;
 
@@ -21,7 +21,7 @@ typedef struct {
 }decimal_table;
 
 typedef struct {
-    char *explanations;
+    char **explanations;
     int size;
 } explanation_table; // do not use yet! (love you :-*)
 
@@ -39,7 +39,6 @@ typedef struct{
 
 void add_row_to_table_of_operations(table_of_operations *table_of_operations ,operation_row *row);
 binary_code* create_binary_code(char *opcode, char *operand_origin, char *operand_destination, char *ARE,  char *address);
-binary_code_table* create_binary_code_row(binary_code **binary_code, int size);
 void print_table_of_operations(table_of_operations *table_of_operations);
 char *binary_to_string_first_word(binary_code *code);
 char *binary_to_string_register(binary_code *code);

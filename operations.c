@@ -37,9 +37,9 @@ void add_row_to_table_of_operations(table_of_operations *table_of_operations ,op
 
 void add_row_to_binary_code_table(binary_code_table *binary_table, binary_code *binary_row){
     // there is no rows in the table yet, add the first row
-    if (binary_table->binary_code == NULL) {
-        binary_table->binary_code = (binary_code**)malloc(sizeof(binary_code*));
-    }
+    // if (binary_table->binary_code == NULL) {
+    //     binary_table->binary_code = (binary_code**)malloc(sizeof(binary_code*));
+    // }
     // } else {
     //     int nextSize = sizeof(binary_code*) * (binary_table->size+1);
     //     binary_table->binary_code = (binary_code**)realloc(binary_table->binary_code, nextSize);
@@ -51,17 +51,6 @@ void add_row_to_binary_code_table(binary_code_table *binary_table, binary_code *
     // }
 }
 
-binary_code_table* create_binary_code_row(binary_code **binary_code, int size){
-    binary_code_table *new_row;
-    new_row = (binary_code_table*)malloc(sizeof(binary_code_table));
-    if(!new_row){
-        printf("Cannot allocate memory!\n");
-        exit(1);
-    }
-    new_row->binary_code = binary_code;
-    new_row->size = size;
-    return new_row;
-    }
 
 binary_code* create_binary_code(char *opcode, char *operand_origin, char *operand_destination, char *ARE, char *address){
     binary_code *new_binary_code;
