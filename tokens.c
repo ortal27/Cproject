@@ -28,3 +28,24 @@ tokenized_line* split(char *line) {
     t->size = index;
     return t;
 }
+
+char* trim_comma(char* string){
+    char *res;
+    for (int i = 0; i < strlen(string); i++)
+    {
+        char *dest = malloc(sizeof(char));
+        strncpy(dest, string+i, 1);
+        if(strcmp(dest, ",") == 0 && strlen(string) > 1){
+            if(i == 0){ // comma is in beginning of word
+                res = malloc((strlen(string) - 1)*sizeof(char));
+                strncpy(res, string + (i+1), (strlen(string) - 1));
+            }
+            else{
+                res = malloc(i*sizeof(char));
+                strncpy(res, string, i);
+            }
+            return res;      
+        }
+    }
+    return string;
+}

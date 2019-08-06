@@ -8,6 +8,6 @@ typedef struct {
 } tokenized_line ;
 
 tokenized_line* split(char *line);
-
+char* trim_comma(char* string);
 
 #endif

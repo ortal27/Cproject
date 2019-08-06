@@ -19,5 +19,6 @@ void on_macro(symbol_table *table_of_symbol, char ** words);
 int is_exist_in_symbol_table(symbol_table *table_of_symbol, char *symbol);
 void exit_with_message(char *symbol);
 int symbol_address(symbol_table *table_of_symbol, char *str);
-
+void change_val(symbol_table *table_of_symbol,int *IC);
+int is_extern(symbol_table *table_of_symbol, char *string);
 #endif

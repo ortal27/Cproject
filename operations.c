@@ -75,13 +75,19 @@ char* binary_to_string_first_word(binary_code *code){
     char* operand_dest = code->operand_destination;
     char* are = code->ARE;
     char* op_code = code->opcode;
+    char* address = code->address;
 
-    if (code->address != NULL){
-        sprintf(buffer, "%s00", code->address);    
+    if (address != NULL){
+        if (are != NULL && strcmp(are, "10") == 0){
+            sprintf(buffer, "%s%s", address, are);    
+        } else if (are == NULL){
+            sprintf(buffer, "%s", code->address);    
+        } else {
+            sprintf(buffer, "%s00", code->address);    
+        }
     } else if(are == NULL){
-            sprintf(buffer, "EMPTY_CODE");    
-    }
-    else if ( strcmp(are, "00") == 0 ) {
+        sprintf(buffer, "EMPTY_CODE");    
+    } else if ( strcmp(are, "00") == 0 ) {
         if(op_code == NULL) {
             sprintf(buffer, "000000%s%s%s",operand_origin, operand_dest, are);    
         } else {
@@ -112,7 +118,7 @@ void print_table_of_operations(table_of_operations *table_of_operations){
         
         char *sourse_code = table_of_operations->rows[i]->sourse_code;
 
-        printf("ROW: %s\n", sourse_code);
+        printf("\nROW: %s\n", sourse_code);
         for (int j = 0; j < table_of_operations->rows[i]->binary_code_table->size; j++)
         {   
             char *code = binary_to_string_first_word(table_of_operations->rows[i]->binary_code_table->binary_code[j]);
@@ -168,4 +174,22 @@ explanation_table *create_explanation_table(){
     table->size  =0;
     table->explanations = NULL;
     return table;
+}
+
+void add_address_val(table_of_operations *table_of_operations, int *IC, char *address_binary, char *are){//, binary_code_table *b_table){
+    for (int i = 0; i < (table_of_operations->size); i++)
+    {
+        int size = table_of_operations->rows[i]->decimal_table->size;
+        for (int j = 0; j <= size; j++)
+        {
+            int da = table_of_operations->rows[i]->decimal_table->decimal_address[j];
+            if (da == *IC) {
+                binary_code *b_code = table_of_operations->rows[i]->binary_code_table->binary_code[j];
+                b_code->address = address_binary;
+                b_code->ARE = are;
+                return;
+            }
+        }
+    }
+    
 }

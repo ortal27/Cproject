@@ -86,3 +86,26 @@ int symbol_address(symbol_table *table_of_symbol, char *str){
     }
     return 0;
 }
+
+void change_val(symbol_table *table_of_symbol,int *IC){
+    for (int i = 0; i < (table_of_symbol->size); i++)
+    {
+        char *curr_prop = table_of_symbol->rows[i]->property;
+        if(strcmp(curr_prop, "data") == 0){
+            table_of_symbol->rows[i]->val = table_of_symbol->rows[i]->val + (*IC);
+        }
+    }
+}
+
+int is_extern(symbol_table *table_of_symbol, char *string){
+    for (int i = 0; i < (table_of_symbol->size); i++)
+    {
+        if(strcmp(table_of_symbol->rows[i]->property, string) == 0){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+
+
