@@ -4,24 +4,29 @@
 
 #include "tokens.h"
 
+#define COLON ":"
+
+
 tokenized_line* split(char *line) {
     char* _line = malloc(strlen(line) + 1); 
     strcpy(_line, line);
-    tokenized_line *t = (tokenized_line*)malloc(sizeof(tokenized_line*));
+    tokenized_line *t = malloc(sizeof(tokenized_line));
     t->size = 0;
-    t->tokens = (char**)malloc(sizeof(char*));
+    t->tokens = malloc(sizeof(char*));
     char delim[] = " ";
-    int line_size = strlen(_line);
- 
     char *ptr = strtok(_line, delim);
     int index = 0;
     t->tokens[index] = ptr;
     while(ptr != NULL){
-    ptr = strtok(NULL, delim);
+        ptr = strtok(NULL, delim);
         if (ptr != NULL) {
             index++;
             char *word = ptr;
-            t->tokens = (char**) realloc(t->tokens, (index + 1) * sizeof(char*));
+            char** p = realloc(t->tokens, (index + 1) * sizeof(char*));
+            if (p == NULL) {
+                printf("Failed to reallocate memory to tokenise the word %s\n", line);
+            }
+            t->tokens = p;
             t->tokens[index] = word;
         }
     }
@@ -29,23 +34,35 @@ tokenized_line* split(char *line) {
     return t;
 }
 
-char* trim_comma(char* string){
-    char *res;
-    for (int i = 0; i < strlen(string); i++)
-    {
-        char *dest = malloc(sizeof(char));
-        strncpy(dest, string+i, 1);
-        if(strcmp(dest, ",") == 0 && strlen(string) > 1){
-            if(i == 0){ // comma is in beginning of word
-                res = malloc((strlen(string) - 1)*sizeof(char));
-                strncpy(res, string + (i+1), (strlen(string) - 1));
-            }
-            else{
-                res = malloc(i*sizeof(char));
-                strncpy(res, string, i);
-            }
-            return res;      
-        }
-    }
-    return string;
+int check_comma(tokenized_line *t){
+    char *curr_str;
+    int flag_no_comma = 0;
+    int i = 0;
+    // while(i <= t->size){
+    //      if(str_ends_with(t->tokens[i], COLON)){
+    //         i++;
+    //     }
+    //     else if((is_opcode(t->tokens[i])) || (is_directive(t->tokens[i]) == ".data") ){
+    //         curr_str = *t->tokens[i];
+    //         flag_no_comma = 1;
+    //         i++;   
+    //     }
+    //     else{
+    //         if(strcmp(t->tokens[i], ",") == 0 || strcmp((t->tokens[i])[0], ",") == 0 ){
+    //             if((is_opcode(curr_str)) || (is_directive(curr_str) == ".data")){
+    //                 return 1; // comma before operand or number
+    //             }else if(flag_no_comma == 0){
+    //                 return 1; // too mant commas
+    //             }else{ // flag_no_comma == 1
+    //                 flag_no_comma == 0;
+    //                 curr_str = *t->tokens[i];
+    //             }
+
+    //         }else{ // no has a comma
+    //             if(flag_no_comma == 1 && strcmp(t->tokens[i], ",") == 0)
+    //             curr_str = *t->tokens[i];
+    //         }
+    //         i++;
+    //     }
+        
 }

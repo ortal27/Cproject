@@ -3,7 +3,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-
 int str_ends_with(const char *s, const char *suffix) {
     size_t slen = strlen(s);
     size_t suffix_len = strlen(suffix);
@@ -22,15 +21,17 @@ int str_begin_with(char *str, char *character){
     }
     return 0;
 }
-int is_empty_line(char **words){
-    for (int i = 0; i < strlen(*words); i++)
-    {
-        if( (strcmp(words[i], "\t") != 0) || (strcmp(words[i], "\n") != 0) ){
-            return 0;
-        }
-    }
-    return 1;
-}
+// int is_empty_line(char **words){
+//     for (int i = 0; i < strlen(*words); i++)
+//     {
+//         if( (strcmp(words[i], "\t") == 0) || (strcmp(words[i], "\n") == 0) ){
+//             continue;
+//         }else{
+//             return 0;
+//         }
+//     }
+//     return 1;
+// }
 
 int is_label_array(char *string){
     int count1 = 0;
@@ -160,3 +161,53 @@ char* remove_plus(char *string){
     }
      return string;
 }
+
+char* remove_end_of_line(char *string){
+    char *res;
+    for (int i = 0; i < strlen(string); i++)
+    {
+        char *dest = malloc(sizeof(char));
+        strncpy(dest, string+i, 1);
+        if(strcmp(dest, "\n") == 0){
+            res = malloc(i*sizeof(char));
+            strncpy(res, string, i); 
+            return res;
+        }
+    }
+     return string;
+}
+
+char* trim_comma(char* string){
+    char *res;
+    for (int i = 0; i < strlen(string); i++)
+    {
+        char *dest = malloc(sizeof(char));
+        strncpy(dest, string+i, 1);
+        if(strcmp(dest, ",") == 0 && strlen(string) > 1){
+            if(i == 0){ // comma is in beginning of word
+                res = malloc((strlen(string) - 1)*sizeof(char));
+                strncpy(res, string + (i+1), (strlen(string) - 1));
+            }
+            else{
+                res = malloc(i*sizeof(char));
+                strncpy(res, string, i);
+            }
+            return res;      
+        }
+    }
+    return string;
+}
+
+char* convert_negative_num(char *address){
+    char *mask = "00000000000001"; 
+    char *mask2 = mask;
+    char *res;
+    for (int  i = 0; i < 14; i++)
+    {
+        *res = (*address ^ *mask);
+        *mask << 1;
+    }
+    *res = *res | *mask2;
+    return res;
+}
+

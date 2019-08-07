@@ -45,10 +45,13 @@ void print_symbol_table(symbol_table *table_of_symbol){
      }
  }
 
- void on_macro(symbol_table *table_of_symbol, char ** words){
+ void on_macro(symbol_table *table_of_symbol, char ** words, int num, int *has_error){
     char *curr_macro = words[1];
+    
     if(is_exist_in_symbol_table(table_of_symbol, curr_macro) == 0){
-        exit_with_message(curr_macro);
+        printf("Line %d: Error! this label already exists line!\n", num);
+        *has_error = 1;
+        return;
     }
 
     row_symbol * row;
@@ -68,10 +71,6 @@ int is_exist_in_symbol_table(symbol_table *table_of_symbol, char *symbol){
         }
     }
     return 1;
-}
-void exit_with_message(char *symbol){
-    printf("Error, %s already exsist in symbol table\n", symbol);
-    exit(1);
 }
 
 int symbol_address(symbol_table *table_of_symbol, char *str){
@@ -106,6 +105,7 @@ int is_extern(symbol_table *table_of_symbol, char *string){
     }
     return 0;
 }
+
 
 
 
