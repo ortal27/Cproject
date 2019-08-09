@@ -23,7 +23,7 @@ typedef struct {
 typedef struct {
     char **explanations;
     int size;
-} explanation_table; // do not use yet! (love you :-*)
+} explanation_table; 
 
 typedef struct{
     decimal_table *decimal_table;
@@ -49,6 +49,8 @@ void add_row_to_explanation_table(explanation_table *explanation_table, char *ex
 void add_row_to_binary_code_table(binary_code_table *binary_table, binary_code *binary_row);
 explanation_table *create_explanation_table();
 void add_address_val(table_of_operations *table_of_operations, int *IC, char *address_binary, char *are);
-
+char* convert_to_special(binary_code *code);
+void change_decimal_address_val(table_of_operations *operations_table ,int *da);
+void free_operations_table(table_of_operations *table);
 
 #endif

@@ -4,6 +4,10 @@
 
 #include "operations.h"
 
+
+/*get pointer to decimal table, poiner to string, pointer for binary code table and anter them 
+into new row.
+return pointer to row*/
 operation_row* create_operation_row(decimal_table *d_table, char* sourse_code, binary_code_table *b_table, explanation_table *e_table){
     operation_row *new_row;
     new_row = (operation_row*)malloc(sizeof(operation_row));
@@ -13,17 +17,19 @@ operation_row* create_operation_row(decimal_table *d_table, char* sourse_code, b
     }
     new_row->decimal_table = d_table;
     new_row->sourse_code = sourse_code; 
-   // new_row->explan = explan;
     new_row->binary_code_table = b_table;
     return new_row;
 }
 
+/*get pointer to operation table, pointer for row.
+add row into operation table */
 void add_row_to_table_of_operations(table_of_operations *table_of_operations ,operation_row *row){
-    // there is no rows in the table yet, add the first row
+    int nextSize = 0;
+    /*there is no rows in the table yet, add the first row */
     if (table_of_operations->rows == NULL) {
         table_of_operations->rows = (operation_row**)malloc(sizeof(operation_row*));
     } else {
-        int nextSize = sizeof(operation_row) * (table_of_operations->size+1);
+        nextSize = sizeof(operation_row) * (table_of_operations->size+1);
         table_of_operations->rows = (operation_row**)realloc(table_of_operations->rows, 
        nextSize);
     }
@@ -34,24 +40,15 @@ void add_row_to_table_of_operations(table_of_operations *table_of_operations ,op
     }
 }
 
-
+/*get pointer to binary code table, pointer for row.
+add row into binary code table  */
 void add_row_to_binary_code_table(binary_code_table *binary_table, binary_code *binary_row){
-    // there is no rows in the table yet, add the first row
-    // if (binary_table->binary_code == NULL) {
-    //     binary_table->binary_code = (binary_code**)malloc(sizeof(binary_code*));
-    // }
-    // } else {
-    //     int nextSize = sizeof(binary_code*) * (binary_table->size+1);
-    //     binary_table->binary_code = (binary_code**)realloc(binary_table->binary_code, nextSize);
-    // }
-    
-    // if(binary_table->binary_code[binary_table->size] == NULL){
-        binary_table->binary_code[binary_table->size] = binary_row;
-        binary_table->size++;
-    // }
+    binary_table->binary_code[binary_table->size] = binary_row;
+    binary_table->size++;
 }
 
-
+/*get 5 pointers to strings and anter them into new row.
+return pointer to row.*/
 binary_code* create_binary_code(char *opcode, char *operand_origin, char *operand_destination, char *ARE, char *address){
     binary_code *new_binary_code;
     new_binary_code = (binary_code*)malloc(sizeof(binary_code));
@@ -68,6 +65,7 @@ binary_code* create_binary_code(char *opcode, char *operand_origin, char *operan
     return new_binary_code;
 }
 
+/* */
 char* binary_to_string_first_word(binary_code *code){
     char *buffer = (char*)malloc(14 * sizeof(char));
     
@@ -99,49 +97,28 @@ char* binary_to_string_first_word(binary_code *code){
     return buffer;
 }
 
-// char* binary_to_string_register(binary_code *code){
-//     char *buffer = (char*)malloc(14 * sizeof(char));
-//     sprintf(buffer, "000000%s%s%s", code->address1, code->address2, code->ARE);
-//     return buffer; 
-// }
-
-// char* binary_to_string_value(binary_code *code){
-//     char *buffer = (char*)malloc(14 * sizeof(char));
-//     sprintf(buffer, "%s%s", code->address2, code->ARE);
-//     return buffer; 
-// }
-
+/*get pointer to operation table and print her out. */
 void print_table_of_operations(table_of_operations *table_of_operations){
-    printf("Table Of Operations\n");
-    for (int i = 0; i < table_of_operations->size; i++)
+    char *special_str;
+    char *code;
+    char *explanation;
+    int decimal_addr = 0;
+    int i; int j;
+    for (i = 0; i < table_of_operations->size; i++)
     {
-        
-        char *sourse_code = table_of_operations->rows[i]->sourse_code;
-
-        printf("\nROW: %s\n", sourse_code);
-        for (int j = 0; j < table_of_operations->rows[i]->binary_code_table->size; j++)
+        for (j = 0; j < table_of_operations->rows[i]->binary_code_table->size; j++)
         {   
-            char *code = binary_to_string_first_word(table_of_operations->rows[i]->binary_code_table->binary_code[j]);
-            int decimal_addr = table_of_operations->rows[i]->decimal_table->decimal_address[j];
-            // char *explanation = table_of_operations->rows[i]->explanation_table->explanations[j];
-            char *explanation = "Not data yet";
-            printf("Decimal Addr: %d -- Explanation: %s -- Binary Machine Code: %s\n", decimal_addr,explanation, code);            
+            code = binary_to_string_first_word(table_of_operations->rows[i]->binary_code_table->binary_code[j]);
+            special_str = convert_to_special(table_of_operations->rows[i]->binary_code_table->binary_code[j]);
+            decimal_addr = table_of_operations->rows[i]->decimal_table->decimal_address[j];
+            explanation = "No data yet";
+            printf("Decimal Addr: %d -- Explanation: %s -- Binary Machine Code: %s - %s\n", decimal_addr,explanation, code, special_str);
         }
-
-        // if(strcmp(explan, "First_word") == 0){
-        //     printf("operation row is: decimal_address %d, sourse_code %s, explanation %s, binary_code_table %s.\n",
-        //  decimal_address, sourse_code, explan, binary_to_string_first_word(table_of_operations->rows[i]->binary_code_table->binary_code[i]));
-        // }
-        // else if(strcmp(explan, "register") == 0){
-        //      printf("operation row is: decimal_address %d, sourse_code %s, explanation %s, binary_code_table %s.\n",
-        //  decimal_address, sourse_code, explan, binary_to_string_register(table_of_operations->rows[i]->binary_code_table->binary_code[i]));
-        // }else{
-        //     printf("operation row is: decimal_address %d, sourse_code %s, explanation %s, binary_code_table %s.\n",
-        //  decimal_address, sourse_code, explan, binary_to_string_value(table_of_operations->rows[i]->binary_code_table->binary_code[i]));
-        //}
      }
 }
 
+/*get pointer to decimal_table, integer pointer.
+add integer into decimal_table  */
 void add_row_to_decimal_table(decimal_table *decimal_table, int decimal_address){
     if (decimal_table->decimal_address == NULL) {
         decimal_table->decimal_address = (int*)malloc(sizeof(int));
@@ -155,6 +132,7 @@ void add_row_to_decimal_table(decimal_table *decimal_table, int decimal_address)
         decimal_table->size++;
     }
 }
+
 
 void add_row_to_explanation_table(explanation_table *explanation_table, char *explanation){
        if (explanation_table->explanations == NULL) {
@@ -176,13 +154,18 @@ explanation_table *create_explanation_table(){
     return table;
 }
 
-void add_address_val(table_of_operations *table_of_operations, int *IC, char *address_binary, char *are){//, binary_code_table *b_table){
-    for (int i = 0; i < (table_of_operations->size); i++)
+/*get pointer to operation table, integer pointer, tow pointers to string.
+add integer and strings into operation table. */
+void add_address_val(table_of_operations *table_of_operations, int *IC, char *address_binary, char *are){
+    int i; int j;
+    int size = 0;
+    int da = 0;
+    for (i = 0; i < (table_of_operations->size); i++)
     {
-        int size = table_of_operations->rows[i]->decimal_table->size;
-        for (int j = 0; j <= size; j++)
+        size = table_of_operations->rows[i]->decimal_table->size;
+        for (j = 0; j <= size; j++)
         {
-            int da = table_of_operations->rows[i]->decimal_table->decimal_address[j];
+            da = table_of_operations->rows[i]->decimal_table->decimal_address[j];
             if (da == *IC) {
                 binary_code *b_code = table_of_operations->rows[i]->binary_code_table->binary_code[j];
                 b_code->address = address_binary;
@@ -191,5 +174,78 @@ void add_address_val(table_of_operations *table_of_operations, int *IC, char *ad
             }
         }
     }
+    
+}
+
+/*get pointer to binary table and convert the binary machine code address into special chars.
+return pointer to string. */
+char* convert_to_special(binary_code *code){
+    char* res = malloc(sizeof(char) * 4);
+    char* str = binary_to_string_first_word(code);
+    int i; 
+    int l;
+    char* a;
+    char* b;
+    int A, B;
+    for (i = 0; i < 14; i += 2)
+    {
+        l = i/2;
+        a = (char*)malloc(sizeof(char));
+        strncpy(a, str+i, 1 );
+        b = (char*)malloc(sizeof(char));
+        strncpy(b, str+i+1,1);
+        A = atoi(a);
+        B = atoi(b);
+        if (A == 0 && B == 0) {
+            res[l] = '*';
+        } 
+        else if(A == 0 && B == 1){
+            res[l] = '#';
+        }
+        else if(A == 1 && B == 0){
+            res[l] = '%';
+        }
+        else{  /*a = 1 and b=1 */
+            res[l] = '!';
+        }   
+    }
+
+    return res;
+}
+
+/*get opreation table and pointer to integer.
+update decimal address of directive lines. */
+void change_decimal_address_val(table_of_operations *operations_table, int *da){
+    int i,j;
+    int size = 0;
+    int val = 0;
+    for (i = 0; i < operations_table->size; i++)
+    {
+        size = operations_table->rows[i]->decimal_table->size;
+        for (j = 0; j <= size; j++)
+        {
+            val = operations_table->rows[i]->decimal_table->decimal_address[j];
+            if( val == -1){
+                operations_table->rows[i]->decimal_table->decimal_address[j] = (*da);
+                (*da)++;
+            }
+        }
+    }
+}
+/*clear all data in operation table */
+void free_operations_table(table_of_operations *table) {
+    int i,j;
+    for ( i = 0; i < table->size; i++)
+    {
+        if (table->rows[i]->binary_code_table != NULL) {
+            for ( j = 0; j < table->rows[i]->binary_code_table->size; j++)
+            {
+                free(table->rows[i]->binary_code_table->binary_code[j]);
+            }
+        }
+        free(table->rows[i]);
+        /* free other tables */
+    }
+    free(table);
     
 }

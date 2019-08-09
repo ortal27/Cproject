@@ -3,11 +3,10 @@
 
 
 typedef struct {
-    int size; //number of tokens
-    char **tokens; // tokens
+    int size; /* number of tokens*/
+    char **tokens; /*  tokens*/
 } tokenized_line ;
 
 tokenized_line* split(char *line);
-int check_comma(tokenized_line *t);
 
 #endif

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+/*get pointer  */
 int str_ends_with(const char *s, const char *suffix) {
     size_t slen = strlen(s);
     size_t suffix_len = strlen(suffix);
@@ -10,10 +11,12 @@ int str_ends_with(const char *s, const char *suffix) {
     return suffix_len <= slen && !strcmp(s + slen - suffix_len, suffix);
 }
 
-
+/*get tow pointeres to strings and check if the second string existing in first string.
+return 1 if char exists, else 0. */
 int str_begin_with(char *str, char *character){
     int size = strlen(str);
-    for (int i = 0; i < size; i++){
+    int i;
+    for (i = 0; i < size; i++){
         char can = str[i];
         if(strcmp(&can, character) == 0){
             return 1;
@@ -21,22 +24,14 @@ int str_begin_with(char *str, char *character){
     }
     return 0;
 }
-// int is_empty_line(char **words){
-//     for (int i = 0; i < strlen(*words); i++)
-//     {
-//         if( (strcmp(words[i], "\t") == 0) || (strcmp(words[i], "\n") == 0) ){
-//             continue;
-//         }else{
-//             return 0;
-//         }
-//     }
-//     return 1;
-// }
 
+/* get pointer to string and check if exist char.
+return 1 if exist, else 0.*/
 int is_label_array(char *string){
     int count1 = 0;
     int count2 = 0;
-    for (int i = 0; i < strlen(string); i++)
+    int i;
+    for (i = 0; i < strlen(string); i++)
     {
         if(string[i] == '['){
             count1++;
@@ -51,9 +46,12 @@ int is_label_array(char *string){
     return 0;
 }
 
+/* get pointer to string and remove char if exist .
+return pointer to string.*/
 char* remove_colon(char *string){
     char *res;
-    for (int i = 0; i < strlen(string); i++)
+    int i;
+    for (i = 0; i < strlen(string); i++)
     {
         char *dest = malloc(sizeof(char));
         strncpy(dest, string+i, 1);
@@ -63,11 +61,15 @@ char* remove_colon(char *string){
             return res;
         }
     }
+    return string;
 }
 
+/* get pointer to string and remove char if exist .
+return pointer to string.*/
 char* remove_hash(char* string){
     char *res;
-    for (int i = 0; i < strlen(string); i++)
+    int i;
+    for (i = 0; i < strlen(string); i++)
     {
         char *dest = malloc(sizeof(char));
         strncpy(dest, string+i, 1);
@@ -80,9 +82,12 @@ char* remove_hash(char* string){
     return string;
 }
 
+/* get pointer to string and remove char if exist .
+return pointer to string.*/
 char* remove_sub(char* string){
     char *res;
-    for (int i = 0; i < strlen(string); i++)
+    int i;
+    for (i = 0; i < strlen(string); i++)
     {
         char *dest = malloc(sizeof(char));
         strncpy(dest, string+i, 1);
@@ -92,12 +97,15 @@ char* remove_sub(char* string){
             return res;
         }
     }
-     return string;
+    return string;
 }
 
+/* get pointer to string and remove chars if exist .
+return pointer to string.*/
 char* exclude_label(char *string){
     char *res;
-    for (int i = 0; i < strlen(string); i++)
+    int i;
+    for (i = 0; i < strlen(string); i++)
     {
         char *dest = malloc(sizeof(char));
         strncpy(dest, string+i, 1);
@@ -107,12 +115,16 @@ char* exclude_label(char *string){
             return res;
         }
     }
+    return string;
 }
 
+/* get pointer to string and remove chars if exist .
+return pointer to string.*/
 char* exclude_index_from_label(char *string){
     int first = -1, sec = -1;
     char *res;
-    for (int i = 0; i < strlen(string); i++)
+    int i;
+    for (i = 0; i < strlen(string); i++)
     {
         char *dest = malloc(sizeof(char));
         strncpy(dest, string+i, 1);
@@ -132,6 +144,8 @@ char* exclude_index_from_label(char *string){
     return res;
 }
 
+/*get integers numbers and trasfer firts number from descimal to binary.
+return poiter string. */
 char* int_to_binary(int buffer_size, int value){ 
     char* buffer = malloc(buffer_size * sizeof(char));
     int c, k;
@@ -147,9 +161,12 @@ char* int_to_binary(int buffer_size, int value){
     return buffer;  
 }
 
+/* get pointer to string and remove char if exist .
+return pointer to string.*/
 char* remove_plus(char *string){
     char *res;
-    for (int i = 0; i < strlen(string); i++)
+    int i;
+    for (i = 0; i < strlen(string); i++)
     {
         char *dest = malloc(sizeof(char));
         strncpy(dest, string+i, 1);
@@ -162,9 +179,30 @@ char* remove_plus(char *string){
      return string;
 }
 
+/* get pointer to string and remove char if exist .
+return pointer to string.*/
+char* remove_dot(char *string){
+    char *res;
+    int i;
+    for (i = 0; i < strlen(string); i++)
+    {
+        char *dest = malloc(sizeof(char));
+        strncpy(dest, string+i, 1);
+        if(strcmp(dest, ".") == 0){
+            res = malloc((strlen(string) - 1)*sizeof(char));
+            strncpy(res, string + (i+1), (strlen(string) - 1));
+            return res;
+        }
+    }
+     return string;
+}
+
+/* get pointer to string and remove char if exist .
+return pointer to string.*/
 char* remove_end_of_line(char *string){
     char *res;
-    for (int i = 0; i < strlen(string); i++)
+    int i;
+    for (i = 0; i < strlen(string); i++)
     {
         char *dest = malloc(sizeof(char));
         strncpy(dest, string+i, 1);
@@ -176,15 +214,17 @@ char* remove_end_of_line(char *string){
     }
      return string;
 }
-
+/* get pointer to string and remove char if exist .
+return pointer to string.*/
 char* trim_comma(char* string){
     char *res;
-    for (int i = 0; i < strlen(string); i++)
+    int i;
+    for (i = 0; i < strlen(string); i++)
     {
         char *dest = malloc(sizeof(char));
         strncpy(dest, string+i, 1);
         if(strcmp(dest, ",") == 0 && strlen(string) > 1){
-            if(i == 0){ // comma is in beginning of word
+            if(i == 0){ /*  comma is in beginning of word*/
                 res = malloc((strlen(string) - 1)*sizeof(char));
                 strncpy(res, string + (i+1), (strlen(string) - 1));
             }
@@ -199,15 +239,17 @@ char* trim_comma(char* string){
 }
 
 char* convert_negative_num(char *address){
-    char *mask = "00000000000001"; 
-    char *mask2 = mask;
-    char *res;
-    for (int  i = 0; i < 14; i++)
+   /*  int  i;
+    int mask = 00000000000001;
+    int mask2 = mask;
+    int num = (int)*address;
+    char* res;
+    for (i = 0; i < 14; i++)
     {
-        *res = (*address ^ *mask);
-        *mask << 1;
+        *res = (num ^ mask);
+        mask = mask << 1;
     }
-    *res = *res | *mask2;
-    return res;
+    *res = *res | mask2;*/
+    return address;
 }
 

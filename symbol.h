@@ -20,4 +20,5 @@ int is_exist_in_symbol_table(symbol_table *table_of_symbol, char *symbol);
 int symbol_address(symbol_table *table_of_symbol, char *str);
 void change_val(symbol_table *table_of_symbol,int *IC);
 int is_extern(symbol_table *table_of_symbol, char *string);
+void free_symbol_table(symbol_table *table);
 #endif
