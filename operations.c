@@ -12,12 +12,12 @@ extern int total_free;
 /*get pointer to decimal table, poiner to string, pointer for binary code table and anter them 
 into new row.
 return pointer to row*/
-operation_row* create_operation_row(decimal_table *d_table, char* sourse_code, binary_code_table *b_table, explanation_table *e_table){
+operation_row* create_operation_row(decimal_table *d_table, char* sourse_code, binary_code_table *b_table){
     operation_row *new_row;
     new_row = (operation_row*)malloc(sizeof(operation_row));
     total_alloc++;
     if(!new_row){
-        printf("Cannot allocate memory!\n");
+        fprintf(stderr, "Failed to allocate memory!\n");
         exit(1);
     }
     new_row->decimal_table = d_table;
@@ -31,14 +31,14 @@ add row into operation table */
 void add_row_to_table_of_operations(table_of_operations *table_of_operations ,operation_row *row){
     int i;
     operation_row** copy;
-    int nextSize = table_of_operations->size + 1;
+    int next_size = table_of_operations->size + 1;
 
     /*there is no rows in the table yet, add the first row */
     if (table_of_operations->rows == NULL) {
         table_of_operations->rows = malloc(sizeof(operation_row*));
         total_alloc++;
     } else {
-        copy = malloc(sizeof(operation_row*) * nextSize);
+        copy = malloc(sizeof(operation_row*) * next_size);
         if (copy == NULL) {
             fprintf(stderr, "Failed to allocate memory");
         }
@@ -70,7 +70,7 @@ binary_code* create_binary_code(char *opcode, char *operand_origin, char *operan
     new_binary_code = (binary_code*)malloc(sizeof(binary_code));
     total_alloc++;
     if(!new_binary_code){
-        printf("Cannot allocate memory!\n");
+        fprintf(stderr, "Failed to allocate memory\n");
         exit(1);
     }
     
@@ -142,13 +142,13 @@ void print_table_of_operations(table_of_operations *table_of_operations){
 add integer into decimal_table  */
 void add_row_to_decimal_table(decimal_table *decimal_table, int decimal_address){
     int *copy;
-    int nextSize = decimal_table->size+1;
+    int next_size = decimal_table->size+1;
     int i;
     if (decimal_table->decimal_address == NULL) {
-        decimal_table->decimal_address = (int*)malloc(sizeof(int));
+        decimal_table->decimal_address = malloc(sizeof(int));
         total_alloc++;
     } else {
-        copy = malloc(sizeof(int) * nextSize);
+        copy = malloc(sizeof(int) * next_size);
         total_alloc++;
         for ( i = 0; i < decimal_table->size; i++)
         {
@@ -163,15 +163,6 @@ void add_row_to_decimal_table(decimal_table *decimal_table, int decimal_address)
     decimal_table->size++;
 }
 
-
-
-explanation_table *create_explanation_table(){
-    explanation_table *table = (explanation_table*)malloc(sizeof(explanation_table));
-    total_alloc++;
-    table->size  =0;
-    table->explanations = NULL;
-    return table;
-}
 
 /*get pointer to operation table, integer pointer, tow pointers to string.
 add integer and strings into operation table. */
@@ -289,4 +280,20 @@ void free_operations_table(table_of_operations *table) {
     free(table);
     total_free++;
     
+}
+
+table_of_operations* new_operations_table() {
+    table_of_operations* operations_table = malloc(sizeof(table_of_operations));
+    total_alloc++;
+    operations_table->size = 0;
+    operations_table->rows = NULL;
+    return operations_table;
+}
+
+decimal_table* new_decimal_table() {
+    decimal_table* table = malloc(sizeof(decimal_table));
+    total_alloc++;
+    table->size = 0;
+    table->decimal_address = NULL;
+    return table;
 }

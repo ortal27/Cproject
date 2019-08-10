@@ -23,7 +23,6 @@ int main(int argc, char* argv[]){
 
     for (i = 1; i < argc; i++){
         parse(argv[i]);
-        printf("\n\n");
     }
 
     printf("Total times malloc was called: %d\n", total_alloc);
@@ -55,16 +54,10 @@ void parse(char* path) {
     FILE *entry_output;
     tokenized_line* l;
     /*initiate table of operations */
-    operations_table = (table_of_operations*)malloc(sizeof(table_of_operations));
-    total_alloc++;
-    operations_table->size = 0;
-    operations_table->rows = NULL;
+    operations_table = new_operations_table();
 
     /*initiate table of symbols */
-    table_of_symbols = (symbol_table*)malloc(sizeof(symbol_table*));
-    total_alloc++;
-    table_of_symbols->size = 0;
-    table_of_symbols->rows = NULL;
+    table_of_symbols = new_symbol_table();
 
     IC = &a;
     DC = &b;
@@ -91,26 +84,24 @@ void parse(char* path) {
             free(l);
             total_free++;
         }else{
+            free(l);
+            total_free++;
             continue;
         }
     }
 
     /* in case we found an error during the first iteration exit with code 1*/
     if(*has_error == 1){
-        printf("Found error/s in this file, during first run\n");
+        fprintf(stderr, "Found error/s in this file, during first run\n");
     }
     (*da) = (*IC) ;
     change_val(table_of_symbols, IC); 
 
     change_decimal_address_val(operations_table, da);
-    
 
     d = 100;
-
     
     IC = &d; 
-
-
 
     for (i = 0; i < *size; i++){
         l = split(file[i]);
@@ -121,23 +112,20 @@ void parse(char* path) {
             free(l);
             total_free++;
         }else{
+            free(l);
+            total_free++;
             continue;
         }
     }
     (*IC)++;
      /*in case we found an error during the second iteration exit with code 1 */
     if(*has_error2 == 1){
-         printf("Found error/s in this file, during second run\n\n");
+         fprintf(stderr, "Found error/s in this file, during second run\n\n");
     }
 
-
-
     print_table_of_operations(operations_table);
-    print_symbol_table(table_of_symbols);
     output = openFile(path, "ob", "w");
-    
 
-    /* close file */
     if(*has_error2 != 1 && *has_error != 1){
         build_object_file(output, operations_table, (*IC -100) , *DC);
     }

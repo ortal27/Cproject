@@ -20,15 +20,10 @@ typedef struct {
     int size;
 }decimal_table;
 
-typedef struct {
-    char **explanations;
-    int size;
-} explanation_table; 
 
 typedef struct{
     decimal_table *decimal_table;
     char* sourse_code;
-    explanation_table* explanation_table;
     binary_code_table *binary_code_table;
 }operation_row;
 
@@ -43,13 +38,14 @@ void print_table_of_operations(table_of_operations *table_of_operations);
 char *binary_to_string_first_word(binary_code *code);
 char *binary_to_string_register(binary_code *code);
 char *binary_to_string_value(binary_code *code);
-operation_row* create_operation_row(decimal_table *d_table, char* sourse_code, binary_code_table *b_table, explanation_table *e_table);
+operation_row* create_operation_row(decimal_table *d_table, char* sourse_code, binary_code_table *b_table);
 void add_row_to_decimal_table(decimal_table *decimal_table, int decimal_address);
 void add_row_to_binary_code_table(binary_code_table *binary_table, binary_code *binary_row);
-explanation_table *create_explanation_table();
 void add_address_val(table_of_operations *table_of_operations, int *IC, char *address_binary, char *are);
 char* convert_to_special(binary_code *code);
 void change_decimal_address_val(table_of_operations *operations_table ,int *da);
 void free_operations_table(table_of_operations *table);
+table_of_operations* new_operations_table();
+decimal_table* new_decimal_table();
 
 #endif

@@ -19,7 +19,7 @@ tokenized_line* split(char *line) {
     char *word;
     char** p;
     char *ptr;
-    char* _line = malloc(strlen(line) + 1); 
+    char* _line = malloc(strlen(line)); 
     strcpy(_line, line);
     t = malloc(sizeof(tokenized_line));
     total_alloc++;
@@ -38,10 +38,11 @@ tokenized_line* split(char *line) {
             p = malloc((index + 1) * sizeof(char*));
             total_alloc++;
             if (p == NULL) {
-                printf("Failed to reallocate memory to tokenise the word %s\n", line);
+                fprintf(stderr, "Failed to allocate memory\n");
+                exit(1);
             }
 
-            for ( i = 0; i < index; i++)
+            for ( i = 0; i <= index; i++)
             {
                 p[i] = t->tokens[i];
             }

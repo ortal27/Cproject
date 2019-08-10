@@ -34,14 +34,14 @@ add the row into symbol table */
 void add_row_to_symbol_table(symbol_table *table_of_symbol, row_symbol *row){
     int i;
     row_symbol** copy;
-    int nextSize = table_of_symbol->size + 1;
+    int next_size = table_of_symbol->size + 1;
     /*  there is no rows in the table yet, add the first row*/
     if (table_of_symbol->rows == NULL) {
         table_of_symbol->rows = (row_symbol**)malloc(sizeof(row_symbol*));
         total_alloc++;
     } else {
 
-        copy = malloc(sizeof(row_symbol*) * nextSize);
+        copy = malloc(sizeof(row_symbol*) * next_size);
 
         for ( i = 0; i < table_of_symbol->size; i++)
         {
@@ -166,7 +166,7 @@ int is_extern(symbol_table *table_of_symbol, char *string){
 /*free all data in symbol table. */
 void free_symbol_table(symbol_table *table){
     int i;
-    for ( i = 0; i < table->size; i++)
+    for ( i = 0; i < table->size ; i++)
     {
         free(table->rows[i]);
         total_free++;
@@ -176,3 +176,11 @@ void free_symbol_table(symbol_table *table){
 }
 
 
+symbol_table* new_symbol_table() {
+    symbol_table* table;
+    table = malloc(sizeof(symbol_table*));
+    total_alloc++;
+    table->size = 0;
+    table->rows = NULL;
+    return table;
+}

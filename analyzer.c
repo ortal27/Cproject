@@ -138,7 +138,6 @@ void analyze_line_secondly(table_of_operations *table, symbol_table *table_of_sy
                 fprintf(extern_output, "%s  %d\n", token2, *IC);
             }
         }  
-        printf("kkfk%d", address);
         /* need to create entry file with lable and address */
     }
 }
@@ -217,7 +216,6 @@ void act_on_istruction_line2(int *IC, tokenized_line *t, symbol_table *table_of_
                         address_lebel = symbol_address(table_of_symbol, str);
                         address_binary = int_to_binary(12, address_lebel);
                     }
-                    printf("%s\n", address_binary);
                     add_address_val(table, IC, address_binary, into_are);
 
                     
@@ -402,10 +400,7 @@ void act_on_istruction_line(int *IC, tokenized_line *t, table_of_operations *tab
     b_table = create_binary_table_based_on_row_istru(binary_code, t, table_of_symbol, num, has_error);
     
     /*initiate table of decimal addresses */
-    d_table = (decimal_table*)malloc(sizeof(decimal_table));
-    total_alloc++;
-    d_table->size = 0;
-    d_table->decimal_address = NULL;
+    d_table = new_decimal_table();
 
     num_of_da = (*IC) - curr_IC;  /* num of rows*/ 
 
@@ -413,7 +408,7 @@ void act_on_istruction_line(int *IC, tokenized_line *t, table_of_operations *tab
     {
         add_row_to_decimal_table(d_table, curr_IC++); 
     }
-    add_row_to_table_of_operations(table, create_operation_row(d_table, source, b_table, create_explanation_table()));
+    add_row_to_table_of_operations(table, create_operation_row(d_table, source, b_table));
 }
 
 /*decipher the content of directive line.
@@ -479,10 +474,7 @@ void act_on_directive_line(int *DC, tokenized_line *t, table_of_operations *tabl
             code_binary = create_binary_code(NULL, NULL, NULL, NULL, t->tokens[i]);
             b_table = create_binary_table_based_on_row_direc_data(code_binary, t, table_of_symbol, i, num, has_error);
             /*initiate table of decimal addresses */
-            d_table = (decimal_table*)malloc(sizeof(decimal_table));
-            total_alloc++;
-            d_table->size = 0;
-            d_table->decimal_address = NULL;
+            d_table = new_decimal_table();
 
             for (k = i; k <= t->size; k++)
             {
@@ -496,7 +488,7 @@ void act_on_directive_line(int *DC, tokenized_line *t, table_of_operations *tabl
                 add_row_to_decimal_table(d_table, *curr_da);
                 (*DC)++;    
             }
-            data_line = create_operation_row(d_table, "", b_table, create_explanation_table());
+            data_line = create_operation_row(d_table, "", b_table);
             add_row_to_table_of_operations(table, data_line);
             break;
         }
@@ -509,6 +501,8 @@ void act_on_directive_line(int *DC, tokenized_line *t, table_of_operations *tabl
                 strncpy(dest, t->tokens[i]+j, 1); 
                 if(strcmp(dest, "\"") == 0 ){
                     num_quot++;
+                    free(dest);
+                    total_free++;
                     continue;
                 }
                 if(strcmp(dest, "") == 0 && num_quot <2){
@@ -517,19 +511,16 @@ void act_on_directive_line(int *DC, tokenized_line *t, table_of_operations *tabl
                 }
                 else if(j  == strlen(word)){ 
                     code_binary = create_binary_code(NULL, NULL, NULL, NULL, make_copy("0"));
-                    b_table = create_binary_table_based_on_row_direc_string(code_binary, "0", table_of_symbol);
+                    b_table = create_binary_table_based_on_row_direc_string(code_binary, make_copy("0"), table_of_symbol);
                 }else{
                     code_binary = create_binary_code(NULL, NULL, NULL, NULL, dest);
                     b_table = create_binary_table_based_on_row_direc_string(code_binary, dest, table_of_symbol);
                 }
                 /*initiate table of decimal addresses */
-                d_table = (decimal_table*)malloc(sizeof(decimal_table));
-                total_alloc++;
-                d_table->size = 0;
-                d_table->decimal_address = NULL;
+                d_table = new_decimal_table();
                 add_row_to_decimal_table(d_table, *curr_da);
         
-                data_line = create_operation_row(d_table, "", b_table, create_explanation_table());
+                data_line = create_operation_row(d_table, "", b_table);
                 add_row_to_table_of_operations(table, data_line);
                 (*DC)++; 
                 if(j == strlen(word) && num_quot == 2){
@@ -693,7 +684,6 @@ binary_code_table* create_binary_table_based_on_row_istru(binary_code * code, to
 Function returns pointer to binary code for that line*/
 binary_code_table* create_binary_table_based_on_row_direc_data(binary_code * code, tokenized_line *t, symbol_table *table_of_symbol, int i_num, int num, int *has_error){
     int i;
-    
     binary_code_table *b_table ;
     binary_code *code_binary;
     char *str;
@@ -704,10 +694,6 @@ binary_code_table* create_binary_table_based_on_row_direc_data(binary_code * cod
     b_table = (binary_code_table*)malloc(sizeof(binary_code_table));
     total_alloc++;
     b_table->size = 0;
-    /*// b_table->binary_code = NULL;
-    // add_row_to_binary_code_table(b_table, code); */
-    
-    /* int  is_negativ = 0;*/
 
     for (i = 0; i <= t->size; i++){
         str = trim_comma(t->tokens[i]);
@@ -787,6 +773,8 @@ binary_code_table* create_binary_table_based_on_row_direc_string(binary_code * c
             bin = int_to_binary(14, 0);
         }
     }        
+    free(str);
+    total_free++;
     
     code_binary = create_binary_code(NULL, NULL, NULL, NULL, bin);
     add_row_to_binary_code_table(b_table, code_binary);

@@ -8,6 +8,7 @@
 #include "analyzer.h"
 
 #define MAX_CHAR 31
+#define MAX_LINE_LEN 256
 
 extern int total_alloc;
 extern int total_free;
@@ -132,7 +133,7 @@ char* exclude_index_from_label(char *string){
 
         if(strcmp(dest, "]") == 0){
             if(first == -1){
-                printf("Error! syntax is wrong.\n");
+                fprintf(stderr, "Error! syntax is wrong.\n");
                 exit(1);
             }
             sec = i;   
@@ -191,12 +192,13 @@ char* trim_comma(char* string){
     char *res;
     int i;
     int len = strlen(string);
-    for (i = 0; i < len; i++)
+    for (i = 0; i <= len; i++)
     {
-        if(string[i] == ',' && i == 0) {
+        if(string[i] == ',' && i == 0 && string[i + 1] != '\0') {
             res = malloc(sizeof(char) * (len - 1));
             total_alloc++;
             strncpy(res, string + 1, (strlen(string) - 1));
+            return res;
         } else if (string[i] == ',' && i == len) {
             string[len - 1] = '\0';
             return string;
@@ -232,6 +234,8 @@ FILE* openFile(char *path, char* extention, char* mode) {
     total_alloc++;
     sprintf(buffer, "%s.%s", path, extention);
     fp = fopen(buffer, mode);
+    free(buffer);
+    total_free++;
     return fp;
 }
 
@@ -239,18 +243,26 @@ FILE* openFile(char *path, char* extention, char* mode) {
 char **read_file(FILE *file, int max_line_len, int* size){
     char **lines;
     char **linesCopy;
-    char line[81];
+    char *line;
     char *lineCpy;
     int i = 0;
     int lineSize = 0;
+
+    line = malloc(sizeof(char) * MAX_LINE_LEN);
+    total_alloc++;
     
     lines = malloc(sizeof(char*));
     total_alloc++;
     if (file == NULL) {
-        fprintf(stderr, "Failed to allocate memory, exiting\n");
+        fprintf(stderr, "Failed to allocate memory\n");
+        exit(1);
     }
 
-    while (fgets(line, sizeof(line), file)){
+    while (fgets(line, MAX_LINE_LEN , file)){
+        if (strlen(line) > max_line_len) {
+            fprintf(stderr, "Line %d is too long, allowed: %lu actual %d , ignoring line \n", *size, strlen(line), max_line_len);
+            continue;
+        }
         linesCopy = malloc(sizeof(char*) * (*size + 1));
         total_alloc++;
         for ( i = 0; i < *size; i++)
@@ -258,12 +270,17 @@ char **read_file(FILE *file, int max_line_len, int* size){
             linesCopy[i] = lines[i];
         }
         
-        lineCpy = malloc(strlen(line) * sizeof(char));
+        lineCpy = malloc(max_line_len * sizeof(char));
         total_alloc++;
         if (lineCpy == NULL) {
             fprintf(stderr, "Failed to allocate memory for line %s, exiting\n", line);
         }
-        strcpy(lineCpy, line);
+        
+        for ( i = 0; i < max_line_len; i++)
+        {
+            lineCpy[i] = line[i];
+        }
+        
         lineSize = strlen(lineCpy);
         if (lineCpy[lineSize - 1] == '\n') {
             lineCpy[lineSize - 1] = '\0';
@@ -273,7 +290,8 @@ char **read_file(FILE *file, int max_line_len, int* size){
         free(lines);
         lines = linesCopy;
     }
-
+    free(line);
+    total_free++;
     return lines;
     
 }
