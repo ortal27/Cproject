@@ -2,7 +2,14 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "analyzer.h"
 #include "symbol.h"
+#include "helpers.h"
+
+#define COLON ":"
+
+extern int total_alloc;
+extern int total_free;
 
 
 /*get two chars and integer number and enter them into new row,
@@ -11,6 +18,7 @@ else return error to output  */
 row_symbol* create_symbol_row(char *symbol, char *property, int* val){
     row_symbol *new_row;
     new_row = (row_symbol*)malloc(sizeof(row_symbol));
+    total_alloc++;
     if(!new_row){
         fprintf(stderr, "Cannot allocate memory!\n");
         exit(1);
@@ -24,17 +32,28 @@ row_symbol* create_symbol_row(char *symbol, char *property, int* val){
 /*get pointer to symbol table and pointer to row. 
 add the row into symbol table */
 void add_row_to_symbol_table(symbol_table *table_of_symbol, row_symbol *row){
+    int i;
+    row_symbol** copy;
+    int nextSize = table_of_symbol->size + 1;
     /*  there is no rows in the table yet, add the first row*/
     if (table_of_symbol->rows == NULL) {
         table_of_symbol->rows = (row_symbol**)malloc(sizeof(row_symbol*));
+        total_alloc++;
     } else {
-        int nextSize = sizeof(row_symbol*) * (table_of_symbol->size+1);
-        table_of_symbol->rows = (row_symbol**)realloc(table_of_symbol->rows, nextSize);
+
+        copy = malloc(sizeof(row_symbol*) * nextSize);
+
+        for ( i = 0; i < table_of_symbol->size; i++)
+        {
+            copy[i] = table_of_symbol->rows[i];
+        }
+
+        free(table_of_symbol->rows);
+        total_free++;
+        table_of_symbol->rows = copy;
     }
-    if(table_of_symbol->rows[table_of_symbol->size] == NULL){
-        table_of_symbol->rows[table_of_symbol->size] = row;
-        table_of_symbol->size++;   
-    }  
+    table_of_symbol->rows[table_of_symbol->size] = row;
+    table_of_symbol->size++;   
 }
 
 /*get pointer to symbol table .
@@ -61,15 +80,18 @@ else create new row, and add into table. */
     row_symbol * row;
     char *curr_macro = words[1];
     int  val = 0;
-    if(is_exist_in_symbol_table(table_of_symbol, curr_macro) == 0){
-        fprintf(stderr, "Line %d: Error! label %s already exists line!\n", num, curr_macro);
-        *has_error = 1;
+    if(str_ends_with(words[0], COLON)){
+         fprintf(stderr, "Line %d: Error! macro cannot have a label.\n", num);
+            *has_error = 1;
+            return;
+    }
+    if(check_legally_name(table_of_symbol, has_error, words[1], num)){
+        val = atoi(words[3]);
+        row = create_symbol_row(curr_macro, "macro",&val);
+        add_row_to_symbol_table(table_of_symbol, row);   
+    }else{
         return;
     }
-
-    val = atoi(words[3]);
-    row = create_symbol_row(curr_macro, "macro",&val);
-    add_row_to_symbol_table(table_of_symbol, row);   
 }
 
 
@@ -143,12 +165,14 @@ int is_extern(symbol_table *table_of_symbol, char *string){
 
 /*free all data in symbol table. */
 void free_symbol_table(symbol_table *table){
-    int i;
+    int i,j;
     for ( i = 0; i < table->size; i++)
     {
         free(table->rows[i]);
+        total_free++;
     }
     free(table);
+    total_free++;
 }
 
 

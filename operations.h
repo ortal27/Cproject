@@ -45,7 +45,6 @@ char *binary_to_string_register(binary_code *code);
 char *binary_to_string_value(binary_code *code);
 operation_row* create_operation_row(decimal_table *d_table, char* sourse_code, binary_code_table *b_table, explanation_table *e_table);
 void add_row_to_decimal_table(decimal_table *decimal_table, int decimal_address);
-void add_row_to_explanation_table(explanation_table *explanation_table, char *explanation);
 void add_row_to_binary_code_table(binary_code_table *binary_table, binary_code *binary_row);
 explanation_table *create_explanation_table();
 void add_address_val(table_of_operations *table_of_operations, int *IC, char *address_binary, char *are);

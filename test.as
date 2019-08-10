@@ -1,6 +1,5 @@
-K:    .data   22 
 .define sz  =   2
-MAIN:     mov  r3  LIST[sz]
+MAIN:     mov r3 , LIST[sz]
 LOOP:     jmp  L1
           prn  #-5
           mov  STR[5] , STR[2]
@@ -13,3 +12,4 @@ L1:       inc  K
 END:     stop
 .define len = 4
 LIST: .data   6 , -9 , len    
+K:    .data   22 
