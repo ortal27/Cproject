@@ -165,7 +165,7 @@ int is_extern(symbol_table *table_of_symbol, char *string){
 
 /*free all data in symbol table. */
 void free_symbol_table(symbol_table *table){
-    int i,j;
+    int i;
     for ( i = 0; i < table->size; i++)
     {
         free(table->rows[i]);

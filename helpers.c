@@ -62,11 +62,10 @@ char* remove_colon(char *string){
     int i;
     for (i = 0; i < strlen(string); i++)
     {
-        
         char *dest = malloc(sizeof(char));
         total_alloc++;
         strncpy(dest, string+i, 1);
-        if(strcmp(dest, ":") == 0){
+        if(dest[0] == ':'){
             res = malloc(i*sizeof(char));
             total_alloc++;
             strncpy(res, string, i); 
@@ -103,21 +102,15 @@ return pointer to string.*/
 char* exclude_label(char *string){
     char *res;
     int i;
-    for (i = 0; i < strlen(string); i++)
+    int len = strlen(string);
+    for (i = 0; i < len; i++)
     {
-        char *dest = malloc(sizeof(char));
-        total_alloc++;
-        strncpy(dest, string+i, 1);
-        if(strcmp(dest, "[") == 0){
-            res = malloc(i*sizeof(char));
-            total_alloc++;
-            strncpy(res, string, i); 
-            free(dest);
-            total_free++;
+        if (string[i] == '[') {
+            res = malloc((i + 1)*sizeof(char));
+            strncpy(res, string, len - i);
+            res[i] = '\0';
             return res;
         }
-        free(dest);
-        total_free++;
     }
     return string;
 }
@@ -159,7 +152,7 @@ char* int_to_binary(int buffer_size, int value){
     int c, k;
     char* buffer = malloc((buffer_size + 1) * sizeof(char));
     total_alloc++;
-    for (c = buffer_size; c >= 0; c--){
+    for (c = buffer_size - 1; c >= 0; c--){
         k = value >> c;
         if (k & 1){
             buffer[buffer_size-c-1] = '1';
@@ -191,47 +184,22 @@ char* remove_dot(char *string){
     return string + 1;
 }
 
-/* get pointer to string and remove char if exist .
-return pointer to string.*/
-char* remove_end_of_line(char *string){
-    char *res;
-    int i;
-    for (i = 0; i < strlen(string); i++)
-    {
-        char *dest = malloc(sizeof(char));
-        total_alloc++;
-        strncpy(dest, string+i, 1);
-        if(strcmp(dest, "\n") == 0){
-            res = malloc(i*sizeof(char));
-            total_alloc++;
-            strncpy(res, string, i); 
-            return res;
-        }
-    }
-     return string;
-}
+
 /* get pointer to string and remove char if exist .
 return pointer to string.*/
 char* trim_comma(char* string){
     char *res;
     int i;
-    for (i = 0; i < strlen(string); i++)
+    int len = strlen(string);
+    for (i = 0; i < len; i++)
     {
-        char *dest = malloc(sizeof(char));
-        total_alloc++;
-        strncpy(dest, string+i, 1);
-        if(strcmp(dest, ",") == 0 && strlen(string) > 1){
-            if(i == 0){ /*  comma is in beginning of word*/
-                res = malloc((strlen(string) - 1)*sizeof(char));
-                total_alloc++;
-                strncpy(res, string + (i+1), (strlen(string) - 1));
-            }
-            else{
-                res = malloc(i*sizeof(char));
-                total_alloc++;
-                strncpy(res, string, i);
-            }
-            return res;      
+        if(string[i] == ',' && i == 0) {
+            res = malloc(sizeof(char) * (len - 1));
+            total_alloc++;
+            strncpy(res, string + 1, (strlen(string) - 1));
+        } else if (string[i] == ',' && i == len) {
+            string[len - 1] = '\0';
+            return string;
         }
     }
     return string;
@@ -308,4 +276,19 @@ char **read_file(FILE *file, int max_line_len, int* size){
 
     return lines;
     
+}
+
+/* copies the given string into manually allocated char* */
+char* make_copy(char* from) {
+    int i;
+    int len = strlen(from)+1;
+    char* copy = malloc(sizeof(char) * len);
+    total_alloc++;
+    for ( i = 0; i < len; i++)
+    {
+        copy[i] = from[i];
+    }
+    
+    copy[len] = '\0';
+    return copy;
 }

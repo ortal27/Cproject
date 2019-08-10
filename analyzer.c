@@ -72,8 +72,8 @@ int check_legally_name(symbol_table *table_of_symbol, int *has_error, char *stri
 analyze the type of line */
 
 void analyze_line(table_of_operations *table ,symbol_table *table_of_symbol, tokenized_line *t, int *IC, int *DC, char *source, int num, int *has_error){
-    char *token = remove_end_of_line(t->tokens[0]);
-    char *token2 = remove_end_of_line(t->tokens[1]); 
+    char *token = t->tokens[0];
+    char *token2 = t->tokens[1]; 
     char *macro = MACRO;
    
     if(token[0] == ';'){ /* this line is a note line */
@@ -102,10 +102,10 @@ void analyze_line(table_of_operations *table ,symbol_table *table_of_symbol, tok
 
 /* Get line from input file.
 looking for instruction lines, and directive lines that are entrys.*/
-void analyze_line_secondly(table_of_operations *table, symbol_table *table_of_symbol, tokenized_line *t, int *IC, int num, int *has_error2){
+void analyze_line_secondly(table_of_operations *table, symbol_table *table_of_symbol, tokenized_line *t, int *IC, int num, int *has_error2, FILE *extern_output, FILE *entry_output){
     int address = 0;
-    char *token = remove_end_of_line(t->tokens[0]);
-    char *token2 = remove_end_of_line(t->tokens[1]);  
+    char *token = t->tokens[0];
+    char *token2 = t->tokens[1];  
     /* 
     if(check_comma(t) == 0){ 
         *has_error2 = 1;
@@ -124,16 +124,18 @@ void analyze_line_secondly(table_of_operations *table, symbol_table *table_of_sy
        if(strcmp(token, ".entry") == 0 || strcmp(token2, ".entry") == 0){
            if(str_ends_with(token, COLON)){  /* have label */
                address = symbol_address(table_of_symbol, t->tokens[2]);
+               fprintf(entry_output, "%s  %d\n", t->tokens[2], address);
             }else{
                 address = symbol_address(table_of_symbol, token2);
+                fprintf(entry_output, "%s  %d\n", token2, address);
             }
         }
         
         if(strcmp(token, ".extern") == 0 || strcmp(token2, ".extern") == 0){
            if(str_ends_with(token, COLON)){  /* have label */
-               address = symbol_address(table_of_symbol, t->tokens[2]);
+               fprintf(extern_output, "%s  %d\n", t->tokens[2], *IC);
             }else{
-                address = symbol_address(table_of_symbol, token2);
+                fprintf(extern_output, "%s  %d\n", token2, *IC);
             }
         }  
         printf("kkfk%d", address);
@@ -155,7 +157,7 @@ void act_on_istruction_line2(int *IC, tokenized_line *t, symbol_table *table_of_
     for (i = 0; i <= t->size; i++){
         str = trim_comma(t->tokens[i]);
         if(i == t->size){
-            str = remove_end_of_line(t->tokens[i]);
+            str =t->tokens[i];
         }
         
         if(strcmp(str, ",") == 0){
@@ -201,7 +203,6 @@ void act_on_istruction_line2(int *IC, tokenized_line *t, symbol_table *table_of_
                 }else{
                     fprintf(stderr, "Line %d: Error! label %s is not defined!\n", num, str);
                     *has_error2 = 1;
-                    return;
                 }
                 (*IC)++;
             }else{
@@ -216,13 +217,13 @@ void act_on_istruction_line2(int *IC, tokenized_line *t, symbol_table *table_of_
                         address_lebel = symbol_address(table_of_symbol, str);
                         address_binary = int_to_binary(12, address_lebel);
                     }
+                    printf("%s\n", address_binary);
                     add_address_val(table, IC, address_binary, into_are);
 
                     
                 }else{
                     fprintf(stderr, "Line %d: Error! label  %s is not defined!\n", num, str);
                     *has_error2 = 1;
-                    return;
                 }
             }
         }
@@ -255,7 +256,7 @@ void act_on_istruction_line(int *IC, tokenized_line *t, table_of_operations *tab
  
         str = trim_comma(t->tokens[i]); 
         if(i == t->size){
-            str = remove_end_of_line(t->tokens[i]);
+            str = t->tokens[i];
         }
         if(strcmp(str, ",") == 0){
             continue;
@@ -422,6 +423,8 @@ void act_on_directive_line(int *DC, tokenized_line *t, table_of_operations *tabl
     int i;
     int j;
     int k;
+    int temp_val = 0;
+    int *str_val;
     int curr_DC; 
     int temp = -1;
     int *curr_da;
@@ -437,6 +440,7 @@ void act_on_directive_line(int *DC, tokenized_line *t, table_of_operations *tabl
     decimal_table *d_table;
     operation_row *data_line;
     curr_da = &temp;
+    str_val = &temp_val;
 
     for (i = 0; i <= t->size; i++){
 
@@ -471,6 +475,7 @@ void act_on_directive_line(int *DC, tokenized_line *t, table_of_operations *tabl
             }
         }
         else if(flag_data == 1){  /*it is data directive */
+        
             code_binary = create_binary_code(NULL, NULL, NULL, NULL, t->tokens[i]);
             b_table = create_binary_table_based_on_row_direc_data(code_binary, t, table_of_symbol, i, num, has_error);
             /*initiate table of decimal addresses */
@@ -496,7 +501,7 @@ void act_on_directive_line(int *DC, tokenized_line *t, table_of_operations *tabl
             break;
         }
         else if(flag_string == 1){ 
-            word = remove_end_of_line(t->tokens[i]);
+            word = t->tokens[i];
             for (j = 0; j <= strlen(t->tokens[i]); j++)
             {
                 dest = malloc(sizeof(char));
@@ -511,7 +516,7 @@ void act_on_directive_line(int *DC, tokenized_line *t, table_of_operations *tabl
                     b_table = create_binary_table_based_on_row_direc_string(code_binary, dest, table_of_symbol);
                 }
                 else if(j  == strlen(word)){ 
-                    code_binary = create_binary_code(NULL, NULL, NULL, NULL, "0");
+                    code_binary = create_binary_code(NULL, NULL, NULL, NULL, make_copy("0"));
                     b_table = create_binary_table_based_on_row_direc_string(code_binary, "0", table_of_symbol);
                 }else{
                     code_binary = create_binary_code(NULL, NULL, NULL, NULL, dest);
@@ -537,7 +542,7 @@ void act_on_directive_line(int *DC, tokenized_line *t, table_of_operations *tabl
         }
         else if(flag_extern == 1){ 
                 if(is_exist_in_symbol_table(table_of_symbol, t->tokens[i])){
-                    new_symbol = create_symbol_row(t->tokens[i], "extern", 0);
+                    new_symbol = create_symbol_row(t->tokens[i], "extern", str_val);
                     add_row_to_symbol_table(table_of_symbol ,new_symbol);   
                 }else{
                     fprintf(stderr, "Line %d: Error! label %s already exists line!\n", num, t->tokens[i]);
@@ -577,7 +582,7 @@ binary_code_table* create_binary_table_based_on_row_istru(binary_code * code, to
         
         str = trim_comma(t->tokens[i]);
         if(i == t->size){
-            str = remove_end_of_line(str);
+            str = str;
         }
         if(num_operand >= 2){
             continue;
@@ -710,7 +715,7 @@ binary_code_table* create_binary_table_based_on_row_direc_data(binary_code * cod
             if(strcmp(str, "\n") == 0){
                 continue;
             }else{
-                str = remove_end_of_line(str);
+                str = str;
             }     
         }
         
@@ -905,7 +910,7 @@ int check_comma(tokenized_line *t){
         prev = curr_str;
         curr_str = t->tokens[i];
         if(i == t->size){
-            curr_str = remove_end_of_line(curr_str);
+            curr_str = curr_str;
             if(strcmp(curr_str, "") == 0){
                 if(strcmp(prev, ",") == 0 || prev[0] == ',' || prev[size_prev-1] == ','){
                     return 0;

@@ -66,7 +66,6 @@ void add_row_to_binary_code_table(binary_code_table *binary_table, binary_code *
 /*get 5 pointers to strings and anter them into new row.
 return pointer to row.*/
 binary_code* create_binary_code(char *opcode, char *operand_origin, char *operand_destination, char *ARE, char *address){
-    char* copy = NULL;
     binary_code *new_binary_code;
     new_binary_code = (binary_code*)malloc(sizeof(binary_code));
     total_alloc++;
@@ -74,29 +73,23 @@ binary_code* create_binary_code(char *opcode, char *operand_origin, char *operan
         printf("Cannot allocate memory!\n");
         exit(1);
     }
-    if (address != NULL) {
-        copy = malloc(sizeof(char) * (strlen(address)));
-        total_alloc++;
-        strcpy(copy, address);
-    }
     
     new_binary_code->opcode = opcode;
     new_binary_code->operand_destination = operand_destination;
     new_binary_code->operand_origin = operand_origin;
     new_binary_code->ARE = ARE;
-    new_binary_code->address = copy;
+    new_binary_code->address = address;
     return new_binary_code;
 }
 
 /* */
 char* binary_to_string_first_word(binary_code *code){
-    char *buffer = (char*)malloc(14 * sizeof(char));
     char* operand_origin = code->operand_origin;
     char* operand_dest = code->operand_destination;
     char* are = code->ARE;
     char* op_code = code->opcode;
     char* address = code->address;
-
+    char *buffer = (char*)malloc(14 * sizeof(char));
     total_alloc++;
 
 
@@ -277,12 +270,11 @@ void free_operations_table(table_of_operations *table) {
     {
         if (table->rows[i]->binary_code_table != NULL) {
             for ( j = 0; j < table->rows[i]->binary_code_table->size; j++)
-            {   /* printf("index %d\n", j);
+            {   
                 if(table->rows[i]->binary_code_table->binary_code[j]->address != NULL){
-                    printf("Releasing %s\n", table->rows[i]->binary_code_table->binary_code[j]->address);
                     free(table->rows[i]->binary_code_table->binary_code[j]->address);
                     total_free++;
-                }*/
+                }
             }
         }
 

@@ -51,6 +51,8 @@ void parse(char* path) {
     FILE *f;
     char **file;
     FILE *output;
+    FILE *extern_output;
+    FILE *entry_output;
     tokenized_line* l;
     /*initiate table of operations */
     operations_table = (table_of_operations*)malloc(sizeof(table_of_operations));
@@ -76,6 +78,8 @@ void parse(char* path) {
     size = &initSize;
     file = read_file(f, 81, size);
 
+    extern_output = openFile(path, "ext", "w");
+    entry_output = openFile(path, "ent", "w");
     
     for (i = 0; i < *size; i++){
         l = split(file[i]);
@@ -111,7 +115,7 @@ void parse(char* path) {
     for (i = 0; i < *size; i++){
         l = split(file[i]);
         if(l->size != 0){
-            analyze_line_secondly(operations_table, table_of_symbols, l, IC, i+1, has_error2);
+            analyze_line_secondly(operations_table, table_of_symbols, l, IC, i+1, has_error2, extern_output, entry_output);
             free(l->tokens);
             total_free++;
             free(l);
@@ -131,6 +135,8 @@ void parse(char* path) {
     print_table_of_operations(operations_table);
     print_symbol_table(table_of_symbols);
     output = openFile(path, "ob", "w");
+    
+
     /* close file */
     if(*has_error2 != 1 && *has_error != 1){
         build_object_file(output, operations_table, (*IC -100) , *DC);
@@ -138,7 +144,6 @@ void parse(char* path) {
 
     free_symbol_table(table_of_symbols);
     free_operations_table(operations_table);
-
     for ( i = 0; i < *size; i++)
     {
         free(file[i]);
@@ -146,4 +151,9 @@ void parse(char* path) {
     }
     free(file);
     total_free++;
+
+    fclose(f);
+    fclose(extern_output);
+    fclose(entry_output);
+    fclose(output);
 }
