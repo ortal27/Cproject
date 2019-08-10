@@ -14,9 +14,9 @@ binary_code_table* create_binary_table_based_on_row_istru(binary_code * code, to
 binary_code_table* create_binary_table_based_on_row_direc_data(binary_code * code, tokenized_line *t, symbol_table *table_of_symbol, int i_num, int num, int *has_error);
 binary_code_table* create_binary_table_based_on_row_direc_string(binary_code * code, char *str, symbol_table *table_of_symbol);
 
-void analyze_line_secondly(table_of_operations *table, symbol_table *table_of_symbol, tokenized_line *t, int *IC, int num, int *has_error2, FILE *extern_output, FILE *entry_output);
+void analyze_line_secondly(table_of_operations *table, symbol_table *table_of_symbol, tokenized_line *t, int *IC, int num, int *has_error, FILE *extern_output, FILE *entry_output);
 
-void act_on_istruction_line2(int *IC, tokenized_line *t, symbol_table *table_of_symbol, table_of_operations *table, int num, int *has_error2);
+void act_on_istruction_line2(int *IC, tokenized_line *t, symbol_table *table_of_symbol, table_of_operations *table, int num, int *has_error, FILE *extern_output);
 
 void build_object_file(FILE *output, table_of_operations* operations_table,int IC ,int DC);
 

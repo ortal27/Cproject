@@ -156,8 +156,10 @@ int is_extern(symbol_table *table_of_symbol, char *string){
     int i;
     for (i = 0; i < (table_of_symbol->size); i++)
     {
-        if(strcmp(table_of_symbol->rows[i]->property, string) == 0){
-            return 1;
+        if(strcmp(table_of_symbol->rows[i]->symbol, string) == 0){
+            if(strcmp(table_of_symbol->rows[i]->property, "extern") == 0){
+              return 1;
+            }
         }
     }
     return 0;

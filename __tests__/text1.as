@@ -1,13 +1,13 @@
 .entry LIST
 .extern W
-.define sz  =   2
-MAIN:     mov r3 , LIST[sz]
+.define LL =   2
+MAIN:     cmp r3 , LIST[sz]
 LOOP:     jmp  W
-          prn  #-5
-          mov  STR[5] , STR[2]
+          prn  r1 ,  #+5
+          mov  STR[5] , r1
           sub  r1 , r4    
           cmp  K , #sz
-          bne  W
+          bne  END
 L1:       inc  L3
 .entry LOOP
           bne   LOOP

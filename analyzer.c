@@ -102,7 +102,7 @@ void analyze_line(table_of_operations *table ,symbol_table *table_of_symbol, tok
 
 /* Get line from input file.
 looking for instruction lines, and directive lines that are entrys.*/
-void analyze_line_secondly(table_of_operations *table, symbol_table *table_of_symbol, tokenized_line *t, int *IC, int num, int *has_error2, FILE *extern_output, FILE *entry_output){
+void analyze_line_secondly(table_of_operations *table, symbol_table *table_of_symbol, tokenized_line *t, int *IC, int num, int *has_error, FILE *extern_output, FILE *entry_output){
     int address = 0;
     char *token = t->tokens[0];
     char *token2 = t->tokens[1];  
@@ -117,17 +117,17 @@ void analyze_line_secondly(table_of_operations *table, symbol_table *table_of_sy
     }
 
     if((is_opcode(token)) || (is_opcode(token2))){ /* instruction line */
-        act_on_istruction_line2(IC, t, table_of_symbol, table, num, has_error2);
+        act_on_istruction_line2(IC, t, table_of_symbol, table, num, has_error, extern_output);
     }
 
     if(str_begin_with(token, DOT) || str_begin_with(token2,DOT)){
        if(strcmp(token, ".entry") == 0 || strcmp(token2, ".entry") == 0){
            if(str_ends_with(token, COLON)){  /* have label */
                address = symbol_address(table_of_symbol, t->tokens[2]);
-               fprintf(entry_output, "%s  %d\n", t->tokens[2], address);
+               fprintf(entry_output, "%s  0%d\n", t->tokens[2], address);
             }else{
                 address = symbol_address(table_of_symbol, token2);
-                fprintf(entry_output, "%s  %d\n", token2, address);
+                fprintf(entry_output, "%s  0%d\n", token2, address);
             }
         }
         
@@ -144,7 +144,7 @@ void analyze_line_secondly(table_of_operations *table, symbol_table *table_of_sy
 
 /* update address for symbols that was not defined in first trans.
 If that symbole are not exist in symbol table, than print error for output */
-void act_on_istruction_line2(int *IC, tokenized_line *t, symbol_table *table_of_symbol, table_of_operations *table, int num, int *has_error2){
+void act_on_istruction_line2(int *IC, tokenized_line *t, symbol_table *table_of_symbol, table_of_operations *table, int num, int *has_error, FILE *extern_output){
     int i;
     int num_of_operand = 0;
     int num_of_registers = 0;
@@ -193,6 +193,8 @@ void act_on_istruction_line2(int *IC, tokenized_line *t, symbol_table *table_of_
                     if(is_extern(table_of_symbol, curr)){
                         into_are = "01";
                         address_binary = int_to_binary(12, 0);
+                        fprintf(extern_output, "%s      0%d\n",  curr, *IC);
+
                     }else{
                         into_are = "10";
                         address_lebel = symbol_address(table_of_symbol, curr);
@@ -201,7 +203,7 @@ void act_on_istruction_line2(int *IC, tokenized_line *t, symbol_table *table_of_
                     add_address_val(table, IC, address_binary, into_are);
                 }else{
                     fprintf(stderr, "Line %d: Error! label %s is not defined!\n", num, str);
-                    *has_error2 = 1;
+                    *has_error = 1;
                 }
                 (*IC)++;
             }else{
@@ -211,6 +213,8 @@ void act_on_istruction_line2(int *IC, tokenized_line *t, symbol_table *table_of_
                     if(is_extern(table_of_symbol, str)){
                         into_are = "01";
                         address_binary = int_to_binary(12, 0);
+                        fprintf(extern_output, "%s      0%d\n", str, *IC);
+
                     }else{
                         into_are = "10";
                         address_lebel = symbol_address(table_of_symbol, str);
@@ -221,7 +225,7 @@ void act_on_istruction_line2(int *IC, tokenized_line *t, symbol_table *table_of_
                     
                 }else{
                     fprintf(stderr, "Line %d: Error! label  %s is not defined!\n", num, str);
-                    *has_error2 = 1;
+                    *has_error = 1;
                 }
             }
         }
@@ -1076,7 +1080,7 @@ void build_object_file(FILE *output, table_of_operations* operations_table,int I
             val = operations_table->rows[i]->decimal_table->decimal_address[j];
             if(val - num_prev == 1 || val == 100){
                 special_address = convert_to_special(operations_table->rows[i]->binary_code_table->binary_code[j]);
-                fprintf(output, "%d  %s\n", val, special_address);
+                fprintf(output, "0%d  %s\n", val, special_address);
                 free(special_address);
                 total_free++;
                 num_prev = val;
@@ -1095,7 +1099,7 @@ void build_object_file(FILE *output, table_of_operations* operations_table,int I
                 val = operations_table->rows[i]->decimal_table->decimal_address[j];
                 if(val != -1){
                     special_address = convert_to_special(operations_table->rows[i]->binary_code_table->binary_code[j]);
-                    fprintf(output, "%d  %s\n", val, special_address);
+                    fprintf(output, "0%d  %s\n", val, special_address);
                     free(special_address);
                     total_free++;
                 }
