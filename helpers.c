@@ -10,10 +10,9 @@
 #define MAX_CHAR 31
 #define MAX_LINE_LEN 256
 
-extern int total_alloc;
-extern int total_free;
-
-/*get pointer  */
+/*
+    checks whenever given string end with suffix
+*/
 int str_ends_with(const char *s, const char *suffix) {
     size_t slen = strlen(s);
     size_t suffix_len = strlen(suffix);
@@ -21,32 +20,35 @@ int str_ends_with(const char *s, const char *suffix) {
     return suffix_len <= slen && !strcmp(s + slen - suffix_len, suffix);
 }
 
-/*get tow pointeres to strings and check if the second string existing in first string.
-return 1 if char exists, else 0. */
-int str_begin_with(char *str, char *character){
+/*
+    checks whenever given string end with postfix
+*/
+int str_begin_with(char *str, char *postfix){
     int size = strlen(str);
     int i;
     for (i = 0; i < size; i++){
         char can = str[i];
-        if(strcmp(&can, character) == 0){
+        if(strcmp(&can, postfix) == 0){
             return 1;
         }
     }
     return 0;
 }
 
-/* get pointer to string and check if exist char.
-return 1 if exist, else 0.*/
-int is_label_array(char *string){
+/*
+    Checks the given array to contain both '[' and ']'
+    Makes sure that the order is correct
+*/
+int is_label_array(char *array){
     int count1 = 0;
     int count2 = 0;
     int i;
-    for (i = 0; i < strlen(string); i++)
+    for (i = 0; i < strlen(array); i++)
     {
-        if(string[i] == '['){
+        if(array[i] == '['){
             count1++;
         }
-        if(string[i] == ']'){
+        if(array[i] == ']'){
             count2++;
         }
     }
@@ -56,32 +58,34 @@ int is_label_array(char *string){
     return 0;
 }
 
-/* get pointer to string and remove char if exist .
-return pointer to string.*/
+/*
+    returns copy of the input with deleted colon (:)
+*/
 char* remove_colon(char *string){
     char *res;
     int i;
     for (i = 0; i < strlen(string); i++)
     {
         char *dest = malloc(sizeof(char));
-        total_alloc++;
+         
         strncpy(dest, string+i, 1);
         if(dest[0] == ':'){
             res = malloc(i*sizeof(char));
-            total_alloc++;
+             
             strncpy(res, string, i); 
             free(dest);
-            total_free++;
+             
             return res;
         }
         free(dest);
-        total_free++;
+         
     }
     return string;
 }
 
-/* get pointer to string and remove char if exist .
-return pointer to string.*/
+/*
+    returns copy of the input with delete char HASH (#)
+*/
 char* remove_hash(char* string){
     if (string == NULL) {
         return string;
@@ -89,8 +93,9 @@ char* remove_hash(char* string){
     return string + 1;
 }
 
-/* get pointer to string and remove char if exist .
-return pointer to string.*/
+/*
+    returns pointer to the first elem in string, "deleting" to subtract char (-)
+*/
 char* remove_sub(char* string){
     if (string == NULL) {
         return string;
@@ -98,34 +103,40 @@ char* remove_sub(char* string){
     return string + 1;
 }
 
-/* get pointer to string and remove chars if exist .
-return pointer to string.*/
-char* exclude_label(char *string){
+/*
+    returns the name of the array from given input
+    input = STR[5] => STR as output
+    this memory have to be freed
+*/
+char* exclude_label(char *label){
     char *res;
     int i;
-    int len = strlen(string);
+    int len = strlen(label);
     for (i = 0; i < len; i++)
     {
-        if (string[i] == '[') {
+        if (label[i] == '[') {
             res = malloc((i + 1)*sizeof(char));
-            strncpy(res, string, len - i);
+            strncpy(res, label, len );
             res[i] = '\0';
             return res;
         }
     }
-    return string;
+    return label;
 }
 
-/* get pointer to string and remove chars if exist .
-return pointer to string.*/
-char* exclude_index_from_label(char *string){
+/*
+    returns the index of the array from given input
+    input = STR[5] => 5 as output
+    this memory have to be freed 
+*/
+char* exclude_index_from_label(char *string, int *has_error){
     int first = -1, sec = -1;
     char *res;
     int i;
     for (i = 0; i < strlen(string); i++)
     {
         char *dest = malloc(sizeof(char));
-        total_alloc++;
+         
         strncpy(dest, string+i, 1);
         if(strcmp(dest, "[") == 0){
             first = i+1;
@@ -134,25 +145,29 @@ char* exclude_index_from_label(char *string){
         if(strcmp(dest, "]") == 0){
             if(first == -1){
                 fprintf(stderr, "Error! syntax is wrong.\n");
-                exit(1);
+                *has_error = 1;
+                return NULL;
             }
             sec = i;   
         }
         free(dest);
-        total_free++;
+         
     }
     res = (char*)malloc((sec - first)*sizeof(char));
-    total_alloc++;
+     
     strncpy(res , string + first, (sec - first));
     return res;
 }
 
-/*get integers numbers and trasfer firts number from descimal to binary.
-return poiter string. */
+/*
+    Convert integer to binary reporesentaiton with given buffer size
+    The result memory have to be freed
+    In case of number too long, will ignore higher bites
+*/
 char* int_to_binary(int buffer_size, int value){ 
     int c, k;
     char* buffer = malloc((buffer_size + 1) * sizeof(char));
-    total_alloc++;
+     
     for (c = buffer_size - 1; c >= 0; c--){
         k = value >> c;
         if (k & 1){
@@ -166,8 +181,9 @@ char* int_to_binary(int buffer_size, int value){
     return buffer;  
 }
 
-/* get pointer to string and remove char if exist .
-return pointer to string.*/
+/*
+    Remove plus char (+) from given input
+*/
 char* remove_plus(char *string){
     if (string == NULL) {
         return string;
@@ -176,8 +192,9 @@ char* remove_plus(char *string){
 
 }
 
-/* get pointer to string and remove char if exist .
-return pointer to string.*/
+/*
+    Remove dot char (.) from given input
+*/
 char* remove_dot(char *string){
     if (string == NULL) {
         return string;
@@ -186,8 +203,9 @@ char* remove_dot(char *string){
 }
 
 
-/* get pointer to string and remove char if exist .
-return pointer to string.*/
+/*
+    Removes comma char (,) from input
+*/
 char* trim_comma(char* string){
     char *res;
     int i;
@@ -196,10 +214,10 @@ char* trim_comma(char* string){
     {
         if(string[i] == ',' && i == 0 && string[i + 1] != '\0') {
             res = malloc(sizeof(char) * (len - 1));
-            total_alloc++;
+             
             strncpy(res, string + 1, (strlen(string) - 1));
             return res;
-        } else if (string[i] == ',' && i == len) {
+        } else if (string[i] == ',' && i == len-1) {
             string[len - 1] = '\0';
             return string;
         }
@@ -208,34 +226,18 @@ char* trim_comma(char* string){
 }
 
 
-
-
-
-
-char* convert_negative_num(char *address){
-   /*  int  i;
-    int mask = 00000000000001;
-    int mask2 = mask;
-    int num = (int)*address;
-    char* res;
-    for (i = 0; i < 14; i++)
-    {
-        *res = (num ^ mask);
-        mask = mask << 1;
-    }
-    *res = *res | mask2;*/
-    return address;
-}
-
-FILE* openFile(char *path, char* extention, char* mode) {
+/*
+    Opens a file with given mode
+*/
+FILE* open_file(char *path, char* extention, char* mode) {
     FILE * fp;
     char* buffer;
-    buffer = malloc(strlen(path) + strlen(extention) + 1);
-    total_alloc++;
+    buffer = malloc(strlen(path) + strlen(extention) + 2);
+     
     sprintf(buffer, "%s.%s", path, extention);
     fp = fopen(buffer, mode);
     free(buffer);
-    total_free++;
+     
     return fp;
 }
 
@@ -249,14 +251,10 @@ char **read_file(FILE *file, int max_line_len, int* size){
     int lineSize = 0;
 
     line = malloc(sizeof(char) * MAX_LINE_LEN);
-    total_alloc++;
+     
     
     lines = malloc(sizeof(char*));
-    total_alloc++;
-    if (file == NULL) {
-        fprintf(stderr, "Failed to allocate memory\n");
-        exit(1);
-    }
+     
 
     while (fgets(line, MAX_LINE_LEN , file)){
         if (strlen(line) > max_line_len) {
@@ -264,14 +262,14 @@ char **read_file(FILE *file, int max_line_len, int* size){
             continue;
         }
         linesCopy = malloc(sizeof(char*) * (*size + 1));
-        total_alloc++;
+         
         for ( i = 0; i < *size; i++)
         {
             linesCopy[i] = lines[i];
         }
         
         lineCpy = malloc(max_line_len * sizeof(char));
-        total_alloc++;
+         
         if (lineCpy == NULL) {
             fprintf(stderr, "Failed to allocate memory for line %s, exiting\n", line);
         }
@@ -291,7 +289,7 @@ char **read_file(FILE *file, int max_line_len, int* size){
         lines = linesCopy;
     }
     free(line);
-    total_free++;
+     
     return lines;
     
 }
@@ -301,7 +299,7 @@ char* make_copy(char* from) {
     int i;
     int len = strlen(from)+1;
     char* copy = malloc(sizeof(char) * len);
-    total_alloc++;
+     
     for ( i = 0; i < len; i++)
     {
         copy[i] = from[i];
@@ -309,4 +307,18 @@ char* make_copy(char* from) {
     
     copy[len] = '\0';
     return copy;
+}
+
+/*
+    checkes whenever arr includes somewhere string
+*/
+int includes(const char** arr, int len, char* string) {
+    int i;
+    for (i = 0; i < len; i++)
+    {
+        if(strcmp(arr[i], string) == 0){
+            return 1;
+        }
+    }
+    return 0; 
 }

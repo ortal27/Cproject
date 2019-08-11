@@ -6,15 +6,13 @@
 
 #define COLON ":"
 
-extern int total_alloc;
-extern int total_free;
-
-/*get pointer for line.
-anter strings between empty chars into two dimensional array and return pointer for this array. */
+/*
+    split strings with delimiter of space into tokens
+*/
 tokenized_line* split(char *line) {
     tokenized_line *t;
-    char delim[] = " ";
     int index = 0;
+    char delim[] = " ";
     int i;
     char *word;
     char** p;
@@ -22,10 +20,10 @@ tokenized_line* split(char *line) {
     char* _line = malloc(strlen(line)); 
     strcpy(_line, line);
     t = malloc(sizeof(tokenized_line));
-    total_alloc++;
+     
     t->size = 0;
     t->tokens = malloc(sizeof(char*));
-    total_alloc++;
+     
     ptr = strtok(_line, delim);
     
     t->tokens[index] = ptr;
@@ -36,7 +34,7 @@ tokenized_line* split(char *line) {
             index++;
             word = ptr;
             p = malloc((index + 1) * sizeof(char*));
-            total_alloc++;
+             
             if (p == NULL) {
                 fprintf(stderr, "Failed to allocate memory\n");
                 exit(1);
@@ -47,7 +45,7 @@ tokenized_line* split(char *line) {
                 p[i] = t->tokens[i];
             }
             free(t->tokens);
-            total_free++;
+             
             
             t->tokens = p;
             t->tokens[index] = word;
@@ -56,4 +54,3 @@ tokenized_line* split(char *line) {
     t->size = index;
     return t;
 }
-

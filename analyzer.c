@@ -17,61 +17,59 @@
 #define MAX_CHAR 31
 #define MAX_LINE_SIZE 256
 #define MAX_LINE_SIZE_ALLOWED 81
+#define NUM_OPCODES 16
+#define NUM_REGISTERS 8
+#define NUM_GUIDANCE 4
+#define IMMDIATE_ADDRESS_OPERAND1 4
+#define IMMDIATE_ADDRESS_OPERAND2 2
+#define DIRECT_REG_ADDRESS_OPERAND1 4
+#define DIRECT_REG_ADDRESS_OPERAND2 14
+#define DIRECT_ADDRESS_OPERAND1 5
+#define DIRECT_ADDRESS_OPERAND2 14
+#define PERMAENT_INDEX_ADDRESS1 5
+#define PERMAENT_INDEX_ADDRESS2 11
+#define NUM_OPERANDS 9
 
-extern int total_alloc;
-extern int total_free;
 
-char *opcode[16]= {"mov", "cmp", "add", "sub", "not", "clr", "lea", "inc", "dec", "jmp", "bne", "red",
+
+const char *opcode[16]= {"mov", "cmp", "add", "sub", "not", "clr", "lea", "inc", "dec", "jmp", "bne", "red",
  "prn","jsr", "rts", "stop"};
 
 char *opcode_to_binary[16] = { "0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111", "1000", "1001","1010","1011", "1100", "1101", "1110", "1111"}; 
 
 char *guidance[4] = {".data", ".string", ".entry", ".extern"};
 
-char *registers[8] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
+const char *registers[8] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
 
 char *register_to_binary[8] = { "000", "001", "010", "011", "100", "101", "110", "111"};
 
-char *op1_to_hash[4] = {"mov", "cmp", "add", "sub"};
-char *op2_to_hash[2] = {"cmp", "prn"};
+const char *immediate_address_operand_1[4] = {"mov", "cmp", "add", "sub"};
+const char *immediate_address_operand_2[2] = {"cmp", "prn"};
 
-char *op1_to_registers[4] = {"mov", "cmp", "add", "sub"};
-char *op2_to_registers[14] = {"mov", "cmp", "add", "sub", "not", "clr", "lea", "inc", "dec", "jmp", "bne", "red", "prn","jsr"};
+const char *direct_register_address_1[4] = {"mov", "cmp", "add", "sub"};
+const char *direct_register_address_2[14] = {"mov", "cmp", "add", "sub", "not", "clr", "lea", "inc", "dec", "jmp", "bne", "red", "prn","jsr"};
 
-char *op1_to_label[5] = {"mov", "cmp", "add", "sub", "lea"};
-char *op2_to_label[14] = {"mov", "cmp", "add", "sub", "not", "clr", "lea", "inc", "dec", "jmp", "bne", "red", "prn","jsr"};
+const char *direct_address_operand_1[5] = {"mov", "cmp", "add", "sub", "lea"};
+const char *direct_address_operand_2[14] = {"mov", "cmp", "add", "sub", "not", "clr", "lea", "inc", "dec", "jmp", "bne", "red", "prn","jsr"};
 
-char *op1_to_label_array[5] = {"mov", "cmp", "add", "sub", "lea"};
-char *op2_to_label_array[11] = {"mov", "cmp", "add", "sub", "not", "clr", "lea", "inc", "dec", "red", "prn"};
+const char *permanent_index_address_operand_1[5] = {"mov", "cmp", "add", "sub", "lea"};
+const char *permanent_index_address_operand_2[11] = {"mov", "cmp", "add", "sub", "not", "clr", "lea", "inc", "dec", "red", "prn"};
 
-
+char *opcode_has_1operand[9] = {"not", "clr","inc", "dec", "jmp", "bne", "red", "prn","jsr"};
 
 /*******************************functions****************************************************/
 
-/*get pointer to symbol table, pointer to string, pointer to error flag, integger number.
-check if string is legal and if exist in symbol table.
-if not legal, or alrady exist update error flag and return 0. else return 1. */
-int check_legally_name(symbol_table *table_of_symbol, int *has_error, char *string, int num){
+void print_to_stdout(int num, int *has_error, char *string){
     
-    if(is_legal_name(string) == 0){
-        fprintf(stderr, "Line %d: Error! label %s is illegal!\n", num, string);
-        *has_error = 1;
-        return 0;
-    }
-    if(is_exist_in_symbol_table(table_of_symbol, string) == 0){
-        fprintf(stderr, "Line %d: Error! label %s already exists line!\n", num, string);
-        *has_error = 1;
-        return 0;
-    }
-    return 1;
 }
 
 
-
-/* Get line from input file.
-analyze the type of line */
-
-void analyze_line(table_of_operations *table ,symbol_table *table_of_symbol, tokenized_line *t, int *IC, int *DC, char *source, int num, int *has_error){
+/* 
+    Get line from input file.
+    analyze the type of line
+    Invoke handlers based of the type of the keyword
+*/
+void analyze_line(table_of_operations *table ,symbol_table *table_of_symbol, tokenized_line *t, int *IC, int *DC, char *source, int num, int *has_error, int *has_extern, int *has_entry){
     char *token = t->tokens[0];
     char *token2 = t->tokens[1]; 
     char *macro = MACRO;
@@ -81,70 +79,66 @@ void analyze_line(table_of_operations *table ,symbol_table *table_of_symbol, tok
     }
 
     else if(strcmp(token,macro) == 0 ||  strcmp(token2,macro) == 0){ /* this line is a macro line */
-        on_macro(table_of_symbol,t->tokens, num, has_error);
+        macro_handler(table_of_symbol,t->tokens, num, has_error);
         return;
     }
     
-    else if((is_opcode(token)) || (is_opcode(token2))){ /* this is istruction line */
-        act_on_istruction_line(IC, t, table, table_of_symbol, source, num, has_error);
+    else if((includes(opcode, NUM_OPCODES, token)) || (includes(opcode, NUM_OPCODES, token2))){ /* this is istruction line */
+        instruction_handler(IC, t, table, table_of_symbol, source, num, has_error);
     }
      
     else if(str_begin_with(token, DOT) || str_begin_with(token2,DOT)){ /*this is direction line */
         if(is_directive(token) || is_directive(token2)){
-            act_on_directive_line(DC, t, table, table_of_symbol, num, has_error);
+            if(strcmp(token, ".entry") == 0 || strcmp(token2, ".entry") == 0){
+                *has_entry = 1;
+            }
+            if(strcmp(token, ".extern") == 0 || strcmp(token2, ".extern") == 0){
+                *has_extern = 1;
+            }
+            directive_handler(DC, t, table, table_of_symbol, num, has_error);
         }
     }else{ 
-        fprintf(stderr, "Line %d: Error! this line is illegal.\n", num);
+        fprintf(stderr, "Error in line %d found uncategorize symbols.\n", num);
         *has_error = 1;
         return;
     }
 }
 
-/* Get line from input file.
-looking for instruction lines, and directive lines that are entrys.*/
+/*
+    Get line from input file.
+    Looks for instruction lines, and directive lines that are entries
+    Based on the keyword, variables invoke corrisponding handler
+*/
 void analyze_line_secondly(table_of_operations *table, symbol_table *table_of_symbol, tokenized_line *t, int *IC, int num, int *has_error, FILE *extern_output, FILE *entry_output){
     int address = 0;
     char *token = t->tokens[0];
     char *token2 = t->tokens[1];  
-    /* 
-    if(check_comma(t) == 0){ 
-        *has_error2 = 1;
-        return;
-}*/
-
     if(strcmp(token,MACRO) == 0){ /* already care in first trans */
         return;
     }
 
-    if((is_opcode(token)) || (is_opcode(token2))){ /* instruction line */
-        act_on_istruction_line2(IC, t, table_of_symbol, table, num, has_error, extern_output);
+    if((includes(opcode, NUM_OPCODES, token)) || (includes(opcode, NUM_OPCODES, token2))){ /* instruction line */
+        update_missing_address(IC, t, table_of_symbol, table, num, has_error, extern_output);
     }
 
     if(str_begin_with(token, DOT) || str_begin_with(token2,DOT)){
        if(strcmp(token, ".entry") == 0 || strcmp(token2, ".entry") == 0){
            if(str_ends_with(token, COLON)){  /* have label */
-               address = symbol_address(table_of_symbol, t->tokens[2]);
+               address = get_address(table_of_symbol, t->tokens[2]);
                fprintf(entry_output, "%s  0%d\n", t->tokens[2], address);
             }else{
-                address = symbol_address(table_of_symbol, token2);
+                address = get_address(table_of_symbol, token2);
                 fprintf(entry_output, "%s  0%d\n", token2, address);
             }
         }
-        
-        if(strcmp(token, ".extern") == 0 || strcmp(token2, ".extern") == 0){
-           if(str_ends_with(token, COLON)){  /* have label */
-               fprintf(extern_output, "%s  %d\n", t->tokens[2], *IC);
-            }else{
-                fprintf(extern_output, "%s  %d\n", token2, *IC);
-            }
-        }  
-        /* need to create entry file with lable and address */
     }
 }
 
-/* update address for symbols that was not defined in first trans.
-If that symbole are not exist in symbol table, than print error for output */
-void act_on_istruction_line2(int *IC, tokenized_line *t, symbol_table *table_of_symbol, table_of_operations *table, int num, int *has_error, FILE *extern_output){
+/*
+    update address for symbols that was not defined in first run.
+    If that symbole are not exist in symbol table, than print error for output
+*/
+void update_missing_address(int *IC, tokenized_line *t, symbol_table *table_of_symbol, table_of_operations *table, int num, int *has_error, FILE *extern_output){
     int i;
     int num_of_operand = 0;
     int num_of_registers = 0;
@@ -155,24 +149,21 @@ void act_on_istruction_line2(int *IC, tokenized_line *t, symbol_table *table_of_
     char *curr;
     for (i = 0; i <= t->size; i++){
         str = trim_comma(t->tokens[i]);
-        if(i == t->size){
-            str =t->tokens[i];
-        }
         
-        if(strcmp(str, ",") == 0){
+        if(strcmp(str, "") == 0){
             continue;
         }
 
         if(str_ends_with(str, COLON)){
             continue;
         }
-        else if(is_opcode(str)){
+        else if(includes(opcode, NUM_OPCODES, str)){
             if(*IC != 100){
                 (*IC)++;
             }
             continue;
         }
-        else if(is_register(str)){
+        else if(includes(registers, NUM_REGISTERS, str)){
             num_of_operand++;
             num_of_registers++;
             if(num_of_registers < 2){
@@ -194,13 +185,12 @@ void act_on_istruction_line2(int *IC, tokenized_line *t, symbol_table *table_of_
                         into_are = "01";
                         address_binary = int_to_binary(12, 0);
                         fprintf(extern_output, "%s      0%d\n",  curr, *IC);
-
                     }else{
                         into_are = "10";
-                        address_lebel = symbol_address(table_of_symbol, curr);
+                        address_lebel = get_address(table_of_symbol, curr);
                         address_binary = int_to_binary(12, address_lebel);
                     }
-                    add_address_val(table, IC, address_binary, into_are);
+                    add_address_value(table, IC, address_binary, into_are);
                 }else{
                     fprintf(stderr, "Line %d: Error! label %s is not defined!\n", num, str);
                     *has_error = 1;
@@ -214,15 +204,12 @@ void act_on_istruction_line2(int *IC, tokenized_line *t, symbol_table *table_of_
                         into_are = "01";
                         address_binary = int_to_binary(12, 0);
                         fprintf(extern_output, "%s      0%d\n", str, *IC);
-
                     }else{
                         into_are = "10";
-                        address_lebel = symbol_address(table_of_symbol, str);
+                        address_lebel = get_address(table_of_symbol, str);
                         address_binary = int_to_binary(12, address_lebel);
                     }
-                    add_address_val(table, IC, address_binary, into_are);
-
-                    
+                    add_address_value(table, IC, address_binary, into_are);   
                 }else{
                     fprintf(stderr, "Line %d: Error! label  %s is not defined!\n", num, str);
                     *has_error = 1;
@@ -232,11 +219,14 @@ void act_on_istruction_line2(int *IC, tokenized_line *t, symbol_table *table_of_
     } 
 }
 
-/*decipher the content of instructin line.
-If this is a legal line, the function create the addresses for this line end insert them to table.
-Else print error for output  */
-void act_on_istruction_line(int *IC, tokenized_line *t, table_of_operations *table, symbol_table *table_of_symbol, char *source, int num, int *has_error){
+/*
+    decode the content of give instuction line and creates an operation row
+    If this is a legal line, the function create the addresses for this line end insert them to table.
+    Else print error for output 
+*/
+void instruction_handler(int *IC, tokenized_line *t, table_of_operations *table, symbol_table *table_of_symbol, char *source, int num, int *has_error){
     int i;
+    int num_curr_opcode = 0;
     int num_of_da = 0;
     int num_of_operand = 0; int num_of_registers = 0;
     int curr_IC = *IC; 
@@ -248,7 +238,7 @@ void act_on_istruction_line(int *IC, tokenized_line *t, table_of_operations *tab
     binary_code_table *b_table;
     decimal_table *d_table;
 
-    if(check_comma(t) == 0){
+    if(check_comma(t) == 0){ /*first chech commas legality*/
         fprintf(stderr, "Line %d: illegal commas!\n", num);
         *has_error = 1;
         return;
@@ -257,10 +247,8 @@ void act_on_istruction_line(int *IC, tokenized_line *t, table_of_operations *tab
     for(i = 0; i <= t->size ; i++){
  
         str = trim_comma(t->tokens[i]); 
-        if(i == t->size){
-            str = t->tokens[i];
-        }
-        if(strcmp(str, ",") == 0){
+       
+        if(strcmp(str, "") == 0){
             continue;
         }
         if(num_of_operand > 2 || num_of_registers > 2){ /* in case that this line is illegal, more than 2 operands*/
@@ -268,9 +256,9 @@ void act_on_istruction_line(int *IC, tokenized_line *t, table_of_operations *tab
             *has_error = 1;
             return;
         }
-
-        if(str_ends_with(str, COLON)){ 
-            if(check_legally_name(table_of_symbol, has_error, str, num)){
+        
+        if(str_ends_with(str, COLON)){ /* label*/
+            if(check_name(table_of_symbol, has_error, str, num)){
                 new_symbol = create_symbol_row(remove_colon(str), "code", &curr_IC);
                 add_row_to_symbol_table(table_of_symbol ,new_symbol);
             }else{
@@ -278,24 +266,25 @@ void act_on_istruction_line(int *IC, tokenized_line *t, table_of_operations *tab
             }
         }
         
-        else if(is_opcode(str)) {
+        else if(includes(opcode, NUM_OPCODES, str)) {
             (*IC)++;
             curr_opcode = str;
+            num_curr_opcode = num_of_opcode_operands(str);
             if(strcmp(curr_opcode, "stop") == 0 || strcmp(curr_opcode, "rts") == 0){ /* opcode without operands */
-                opcode_to_binary = trans_opcode_to_binary(curr_opcode);
+                opcode_to_binary = translate_opcode_to_binary(curr_opcode);
                 operand_1 = "00";
                 operand_2 = "00";
                 break;
             }
-            opcode_to_binary = trans_opcode_to_binary(str);
+            opcode_to_binary = translate_opcode_to_binary(str);
         }
 
-        else if(is_register(str)){ 
+        else if(includes(registers, NUM_REGISTERS, str)){ 
             if(num_of_operand == 0){
-                if(is_direct_register_address_operand1(curr_opcode)){
+                if(includes(direct_register_address_1, DIRECT_REG_ADDRESS_OPERAND1, curr_opcode)){
                     operand_1 = "11";
                 }
-                else if((num_of_operand == 0) && (is_direct_register_address_operand2(curr_opcode)) ){
+                else if((num_of_operand == 0) && (includes(direct_register_address_2, DIRECT_REG_ADDRESS_OPERAND2, curr_opcode)) ){
                     operand_1 = "00";
                     operand_2 = "11";
                 }else{
@@ -304,7 +293,7 @@ void act_on_istruction_line(int *IC, tokenized_line *t, table_of_operations *tab
                     return;
                 }        
             }else{
-                if(is_direct_register_address_operand2(curr_opcode)){
+                if(includes(direct_register_address_2, DIRECT_REG_ADDRESS_OPERAND2, curr_opcode)){
                      operand_2 = "11";
                 }else{
                     fprintf(stderr, "Line %d: Error! illegal operand %s for this opcode.\n", num, str);
@@ -321,11 +310,10 @@ void act_on_istruction_line(int *IC, tokenized_line *t, table_of_operations *tab
 
         else if(str_begin_with(str, HASH)){  /*operand that hash attached to number */
             if(num_of_operand == 0){
-                if(is_immediate_address_operand1(curr_opcode)){
+                if(includes(immediate_address_operand_1, IMMDIATE_ADDRESS_OPERAND1, curr_opcode)){
                     operand_1 = "00";
                 }
-                else if((num_of_operand == 0) && (is_immediate_address_operand2
-            (curr_opcode)) ){
+                else if((num_of_operand == 0) && (includes(immediate_address_operand_2, IMMDIATE_ADDRESS_OPERAND2, curr_opcode)) ){
                     operand_1 = "00";
                     operand_2 = "00";
                 }else{
@@ -335,8 +323,7 @@ void act_on_istruction_line(int *IC, tokenized_line *t, table_of_operations *tab
                 }
             } 
             else{
-                if(is_immediate_address_operand2
-            (curr_opcode)){
+                if(includes(immediate_address_operand_2, IMMDIATE_ADDRESS_OPERAND2, curr_opcode)){
                     operand_2 = "00";
                 }else{
                     fprintf(stderr, "Line %d: Error! illegal operand %s for this opcode.\n", num, str);
@@ -352,10 +339,10 @@ void act_on_istruction_line(int *IC, tokenized_line *t, table_of_operations *tab
             if(is_label_array(str)){
                 (*IC) = (*IC) + 2;
                 if(num_of_operand == 0){
-                    if(is_permanent_index_address_operand1(curr_opcode)){
+                    if(includes(permanent_index_address_operand_1, PERMAENT_INDEX_ADDRESS1, curr_opcode)){
                         operand_1 = "10";
                     }
-                    else if((num_of_operand == 0) && (is_permanent_index_address_operand2(curr_opcode)) ){
+                    else if((num_of_operand == 0) && (includes(permanent_index_address_operand_2, PERMAENT_INDEX_ADDRESS2, curr_opcode)) ){
                         operand_1 = "00";
                         operand_2 = "10";
                     }else{
@@ -364,7 +351,7 @@ void act_on_istruction_line(int *IC, tokenized_line *t, table_of_operations *tab
                         return;
                     } 
                 }else{
-                    if(is_permanent_index_address_operand2(curr_opcode)){
+                    if(includes(permanent_index_address_operand_2, PERMAENT_INDEX_ADDRESS2, curr_opcode)){
                         operand_2 = "10";
                     }else{
                      fprintf(stderr, "Line %d: Error! illegal operand %s for this opcode.\n", num, str);
@@ -376,10 +363,10 @@ void act_on_istruction_line(int *IC, tokenized_line *t, table_of_operations *tab
             }else{ /* just a labels */ 
                  (*IC)++;
                  if(num_of_operand == 0){
-                    if(is_direct_address_operand1(curr_opcode)){
+                    if(includes(direct_address_operand_1, DIRECT_ADDRESS_OPERAND1, curr_opcode)){
                         operand_1 = "01";
                     }
-                    else if((num_of_operand == 0) && (is_direct_address_operand2(curr_opcode)) ){
+                    else if((num_of_operand == 0) && (includes(direct_address_operand_2, DIRECT_ADDRESS_OPERAND2, curr_opcode)) ){
                         operand_1 = "00";
                         operand_2 = "01";
                     }else{
@@ -388,7 +375,7 @@ void act_on_istruction_line(int *IC, tokenized_line *t, table_of_operations *tab
                         return;
                     }
                  }else{
-                    if(is_direct_address_operand2(curr_opcode)){
+                    if(includes(direct_address_operand_2, DIRECT_ADDRESS_OPERAND2, curr_opcode)){
                         operand_2 = "01";
                     }else{
                        fprintf(stderr, "Line %d: Error! illegal operand %s for this opcode.\n", num, str);
@@ -400,8 +387,15 @@ void act_on_istruction_line(int *IC, tokenized_line *t, table_of_operations *tab
             }
         }
     } /*end of for */
+    if(num_curr_opcode != 0){
+        if(num_of_operand > num_curr_opcode){
+            fprintf(stderr, "Line %d: Error! too many operands for opcode %s!\n", num, curr_opcode);
+            *has_error = 1;
+            return;
+        }
+    }
     binary_code = create_binary_code(opcode_to_binary, operand_1, operand_2, are, NULL);
-    b_table = create_binary_table_based_on_row_istru(binary_code, t, table_of_symbol, num, has_error);
+    b_table = create_binary_table_based_on_instruction(binary_code, t, table_of_symbol, num, has_error);
     
     /*initiate table of decimal addresses */
     d_table = new_decimal_table();
@@ -415,10 +409,13 @@ void act_on_istruction_line(int *IC, tokenized_line *t, table_of_operations *tab
     add_row_to_table_of_operations(table, create_operation_row(d_table, source, b_table));
 }
 
-/*decipher the content of directive line.
-If this is a legal line, the function create the addresses for this line end insert them to table.
-Else print error for output  */
-void act_on_directive_line(int *DC, tokenized_line *t, table_of_operations *table, symbol_table *table_of_symbol, int num, int *has_error){
+/*
+    decode the content of directive line.
+    If this is a legal line, the function
+    create the addresses for this line end insert them to table.
+    Else print error for output
+*/
+void directive_handler(int *DC, tokenized_line *t, table_of_operations *table, symbol_table *table_of_symbol, int num, int *has_error){
     int i;
     int j;
     int k;
@@ -444,7 +441,7 @@ void act_on_directive_line(int *DC, tokenized_line *t, table_of_operations *tabl
     for (i = 0; i <= t->size; i++){
 
         if(str_ends_with(t->tokens[i], COLON)){ 
-           if(check_legally_name(table_of_symbol, has_error, t->tokens[i], num)){
+           if(check_name(table_of_symbol, has_error, t->tokens[i], num)){
                 curr_DC = *DC;
                 new_symbol = create_symbol_row(remove_colon(t->tokens[i]), "data", &curr_DC);
                 add_row_to_symbol_table(table_of_symbol ,new_symbol);
@@ -476,7 +473,7 @@ void act_on_directive_line(int *DC, tokenized_line *t, table_of_operations *tabl
         else if(flag_data == 1){  /*it is data directive */
         
             code_binary = create_binary_code(NULL, NULL, NULL, NULL, t->tokens[i]);
-            b_table = create_binary_table_based_on_row_direc_data(code_binary, t, table_of_symbol, i, num, has_error);
+            b_table = create_binary_table_based_on_data(code_binary, t, table_of_symbol, i, num, has_error);
             /*initiate table of decimal addresses */
             d_table = new_decimal_table();
 
@@ -485,7 +482,7 @@ void act_on_directive_line(int *DC, tokenized_line *t, table_of_operations *tabl
                 if(strcmp(t->tokens[k], "\n") == 0){
                         continue;
                 }
-                if(strcmp(t->tokens[k], ",") == 0){
+                if(strcmp(t->tokens[k], "") == 0){
                    continue;
                 }
                 
@@ -501,24 +498,24 @@ void act_on_directive_line(int *DC, tokenized_line *t, table_of_operations *tabl
             for (j = 0; j <= strlen(t->tokens[i]); j++)
             {
                 dest = malloc(sizeof(char));
-                total_alloc++;
+                 
                 strncpy(dest, t->tokens[i]+j, 1); 
                 if(strcmp(dest, "\"") == 0 ){
                     num_quot++;
                     free(dest);
-                    total_free++;
+                     
                     continue;
                 }
                 if(strcmp(dest, "") == 0 && num_quot <2){
                     code_binary = create_binary_code(NULL, NULL, NULL, NULL, dest);
-                    b_table = create_binary_table_based_on_row_direc_string(code_binary, dest, table_of_symbol);
+                    b_table = create_binary_table_based_on_string(code_binary, dest, table_of_symbol);
                 }
                 else if(j  == strlen(word)){ 
                     code_binary = create_binary_code(NULL, NULL, NULL, NULL, make_copy("0"));
-                    b_table = create_binary_table_based_on_row_direc_string(code_binary, make_copy("0"), table_of_symbol);
+                    b_table = create_binary_table_based_on_string(code_binary, make_copy("0"), table_of_symbol);
                 }else{
                     code_binary = create_binary_code(NULL, NULL, NULL, NULL, dest);
-                    b_table = create_binary_table_based_on_row_direc_string(code_binary, dest, table_of_symbol);
+                    b_table = create_binary_table_based_on_string(code_binary, dest, table_of_symbol);
                 }
                 /*initiate table of decimal addresses */
                 d_table = new_decimal_table();
@@ -551,12 +548,16 @@ void act_on_directive_line(int *DC, tokenized_line *t, table_of_operations *tabl
     }/* end of for */
 }
 
-/*get insruction line and create the addresses for opreands and adds them into table binary machine code.
-Function returns pointer to binary code for that line*/
-binary_code_table* create_binary_table_based_on_row_istru(binary_code * code, tokenized_line *t, symbol_table *table_of_symbol, int num, int *has_error){
+/*
+    get insruction line and create the addresses
+    for opreands and adds them into binary machine code table.
+*/
+binary_code_table* create_binary_table_based_on_instruction(binary_code * code, tokenized_line *t, symbol_table *table_of_symbol, int num, int *has_error){
     int i;
     int should_check = 0;  int num_operand = 0; int num_register = 0;
+    int flag_label = 0;
     char temp;
+    char *prev;
     char* bin;
     char *str;
     char *curr_str;
@@ -568,27 +569,23 @@ binary_code_table* create_binary_table_based_on_row_istru(binary_code * code, to
     binary_code_table *b_table;
     /*initiate table of binary code */
     b_table = (binary_code_table*)malloc(sizeof(binary_code_table));
-    total_alloc++;
+     
     b_table->size = 0;
     /*// b_table->binary_code = NULL;*/
     add_row_to_binary_code_table(b_table, code);
     
     for (i = 0; i <= t->size; i++){
-        
+        prev = str;
         str = trim_comma(t->tokens[i]);
-        if(i == t->size){
-            str = str;
-        }
-        if(num_operand >= 2){
-            continue;
-        }
-        if(strcmp(str, ",") == 0){
+          
+        if(strcmp(str, "") == 0){
             continue;
         }
         if(str_ends_with(str, COLON)){ /*it is a label*/
+            flag_label = 1;
             continue;
         }
-        else if(is_opcode(str)){
+        else if(includes(opcode, NUM_OPCODES, str)){
             continue;
         }
         else if(str_begin_with(str, HASH)){ /* immediate address */
@@ -601,7 +598,7 @@ binary_code_table* create_binary_table_based_on_row_istru(binary_code * code, to
             }
             temp = *curr_str;
             if(is_exist_in_symbol_table(table_of_symbol, curr_str) == 0){ 
-                address = int_to_binary(12, symbol_address(table_of_symbol, curr_str));
+                address = int_to_binary(12, get_address(table_of_symbol, curr_str));
                 code_binary = create_binary_code(NULL, NULL, NULL, "00",address);
             }else if(isdigit(temp)){
                 bin = int_to_binary(12, atoi(str+1));
@@ -615,9 +612,9 @@ binary_code_table* create_binary_table_based_on_row_istru(binary_code * code, to
             add_row_to_binary_code_table(b_table, code_binary);    
             num_operand++;   
         }
-        else if(is_register(str)){ /* direct register address */
+        else if(includes(registers, NUM_REGISTERS, str)){ /* direct register address */
             if(num_register == 0){
-                code_binary = create_binary_code(NULL, trans_register_to_binary(str), "000", "00", NULL);
+                code_binary = create_binary_code(NULL, translate_register_to_binary(str), "000", "00", NULL);
                 num_register++;
                 num_operand++;
                 should_check = 1;
@@ -627,15 +624,19 @@ binary_code_table* create_binary_table_based_on_row_istru(binary_code * code, to
                 num_register++;
                 num_operand++;
                 if (should_check == 1){
-                   if(strcmp(t->tokens[i-1], ",") == 0){
-                        b_table->binary_code[i-2]->operand_destination = trans_register_to_binary(str); 
+                   if(strcmp(prev, "") == 0){
+                       if(flag_label == 1){
+                            b_table->binary_code[i-3]->operand_destination = translate_register_to_binary(str); 
+                       }else{
+                            b_table->binary_code[i-2]->operand_destination = translate_register_to_binary(str); 
+                       }
                    }else{
-                       b_table->binary_code[i-1]->operand_destination = trans_register_to_binary(str);
+                       b_table->binary_code[i-1]->operand_destination = translate_register_to_binary(str);
                    }
                 }
             }
             else{  /*sec operand is register */
-                code_binary = create_binary_code(NULL, "000", trans_register_to_binary(str),"00", NULL);
+                code_binary = create_binary_code(NULL, "000", translate_register_to_binary(str),"00", NULL);
                 num_operand++;
                 num_register++;
                 add_row_to_binary_code_table(b_table, code_binary);   
@@ -651,14 +652,17 @@ binary_code_table* create_binary_table_based_on_row_istru(binary_code * code, to
                     break;
                 }
                 code_binary1 = create_binary_code(NULL, NULL, NULL, NULL, NULL);
-                index = exclude_index_from_label(str);
+                index = exclude_index_from_label(str, has_error);
+                if (index == NULL) {
+                    return NULL;
+                }
                 temp = *index;
                 if(isdigit(temp)){
                     bin = int_to_binary(12, atoi(index));
                     code_binary2 = create_binary_code(NULL, NULL, NULL, "00", bin);
                 }else{ /*is a symbol */
                     if(is_exist_in_symbol_table(table_of_symbol, index) == 0){
-                        address = int_to_binary(12, symbol_address(table_of_symbol, index));
+                        address = int_to_binary(12, get_address(table_of_symbol, index));
                         code_binary2 = create_binary_code(NULL, NULL, NULL, "00", address);
                     }else{
                         fprintf(stderr, "Line %d: Erorr! no such symbol %s.\n", num, index);
@@ -684,9 +688,11 @@ binary_code_table* create_binary_table_based_on_row_istru(binary_code * code, to
     return b_table;
 }
 
-/*get directive data line and create the addresses for values and adds them into table binary machine code.
-Function returns pointer to binary code for that line*/
-binary_code_table* create_binary_table_based_on_row_direc_data(binary_code * code, tokenized_line *t, symbol_table *table_of_symbol, int i_num, int num, int *has_error){
+/*
+    get directive data line and create the addresses for values and adds them into table binary machine code.
+    returns pointer to binary code for that line
+*/
+binary_code_table* create_binary_table_based_on_data(binary_code * code, tokenized_line *t, symbol_table *table_of_symbol, int i_num, int num, int *has_error){
     int i;
     binary_code_table *b_table ;
     binary_code *code_binary;
@@ -696,26 +702,16 @@ binary_code_table* create_binary_table_based_on_row_direc_data(binary_code * cod
     char temp;
     /*initiate table of binary code */
     b_table = (binary_code_table*)malloc(sizeof(binary_code_table));
-    total_alloc++;
+     
     b_table->size = 0;
 
     for (i = 0; i <= t->size; i++){
         str = trim_comma(t->tokens[i]);
-        if(i == t->size){
-            if(strcmp(str, "\n") == 0){
-                continue;
-            }else{
-                str = str;
-            }     
-        }
-        
-        if(strcmp(str, ",") == 0){
+       
+        if(strcmp(str, "") == 0){
             continue;
         }     
-        if(str_ends_with(str, COLON)){ /* it is a label*/
-            continue;
-        }
-        if(is_directive(str)){
+        if(str_ends_with(str, COLON) || is_directive(str)){ 
             continue;
         }
         if(str[0] == '-'){ /* if number is started with subtraction sign */
@@ -731,7 +727,7 @@ binary_code_table* create_binary_table_based_on_row_direc_data(binary_code * cod
         if(isdigit(temp)){
             bin = int_to_binary(14, atoi(str));
         }else if(is_exist_in_symbol_table(table_of_symbol, str) == 0){ 
-            bin = int_to_binary(14, symbol_address(table_of_symbol, str));
+            bin = int_to_binary(14, get_address(table_of_symbol, str));
         }else{
             fprintf(stderr, "Line %d: Error! label %s is not exists.\n", num, str);
             *has_error = 1;
@@ -749,17 +745,19 @@ binary_code_table* create_binary_table_based_on_row_direc_data(binary_code * cod
 }
 
 
-/*get char from directive string line.
-The function create address for this char and add the address into table binary machine code.
-Function returns pointer to binary code for that line*/
-binary_code_table* create_binary_table_based_on_row_direc_string(binary_code * code, char *str, symbol_table *table_of_symbol){
+/*
+    get char from directive string line.
+    creates an address for given input and adds it into table binary machine code.
+    returns pointer to binary code for that line
+*/
+binary_code_table* create_binary_table_based_on_string(binary_code * code, char *str, symbol_table *table_of_symbol){
     int i;
     binary_code_table *b_table; 
     binary_code *code_binary;
      char *bin;
     /* initiate table of binary code */
     b_table = (binary_code_table*)malloc(sizeof(binary_code_table));
-    total_alloc++;
+     
     b_table->size = 0;
    
     if(strcmp(str, "") == 0){ /* in case that we have empty char */
@@ -778,185 +776,136 @@ binary_code_table* create_binary_table_based_on_row_direc_string(binary_code * c
         }
     }        
     free(str);
-    total_free++;
+     
     
     code_binary = create_binary_code(NULL, NULL, NULL, NULL, bin);
     add_row_to_binary_code_table(b_table, code_binary);
     return b_table;
 }
 
-/* get poiter to string and check if that string are equal to char in op1_to _hash array.
-Function returns 1 if  strings are equals, else return 0. */
-int is_immediate_address_operand1(char *string){
-    int i;
-    for (i = 0; i < 4; i++)
-    {
-        if(strcmp(op1_to_hash[i], string) == 0){
-            return 1;
-        }
-    }
-    return 0; 
-}
-
-/* get poiter to string and check if that string are equal to char in op2_to _hash array.
-Function returns 1 if  strings are equals, else return 0. */
-int is_immediate_address_operand2(char *string){
-    int i;
-    for (i = 0; i < 2; i++)
-    {
-        if(strcmp(op2_to_hash[i], string) == 0){
-            return 1;
-        }
-    }
-    return 0; 
-}
-
-/* get poiter to string and check if that string are equal to char in op1_to_registers array.
-Function returns 1 if  strings are equals, else return 0. */
-int is_direct_register_address_operand1(char *string){
-    int i;
-    for (i = 0; i < 4; i++)
-    {
-        if(strcmp(op1_to_registers[i], string) == 0){
-            return 1;
-        }
-    }
-    return 0; 
-}
-
-/* get poiter to string and check if that string are equal to char in op2_to_registers array.
-Function returns 1 if  strings are equals, else return 0. */
-int is_direct_register_address_operand2(char *string){
-    int i;
-    for (i = 0; i < 14; i++)
-    {
-        if(strcmp(op2_to_registers[i], string) == 0){
-            return 1;
-        }
-    }
-    return 0; 
-}
-
-/* get poiter to string and check if that string are equal to char in op1_to_label array.
-Function returns 1 if  strings are equals, else return 0. */
-int is_direct_address_operand1(char *string){
-    int i;
-    for (i = 0; i < 5; i++)
-    {
-        if(strcmp(op1_to_label[i], string) == 0){
-            return 1;
-        }
-    }
-    return 0; 
-}
-
-/* get poiter to string and check if that string are equal to char in op2_to_label array.
-Function returns 1 if  strings are equals, else return 0. */
-int is_direct_address_operand2(char *string){
-    int i;
-    for (i = 0; i < 14; i++)
-    {
-        if(strcmp(op2_to_label[i], string) == 0){
-            return 1;
-        }
-    }
-    return 0; 
-}
-
-/* get poiter to string and check if that string are equal to char in op1_to_label_array .
-Function returns 1 if  strings are equals, else return 0. */
-int is_permanent_index_address_operand1(char *string){
-    int i;
-    for (i = 0; i < 5; i++)
-    {
-        if(strcmp(op1_to_label_array[i], string) == 0){
-            return 1;
-        }
-    }
-    return 0; 
-}
-
-/* get poiter to string and check if that string are equal to char in op2_to_label_array .
-Function returns 1 if  strings are equals, else return 0. */
-int is_permanent_index_address_operand2(char *string){
-    int i;
-    for (i = 0; i < 11; i++)
-    {
-        if(strcmp(op2_to_label_array[i], string) == 0){
-            return 1;
-        }
-    }
-    return 0; 
-}
-
-/* get pointer to two dimensional array for line and check the legality of commas.
-Function returns 1 if commas are legal, else return 0 */
+/*
+    get pointer to tokenized line legality of commas.
+    returns 1 if commas are legal, else return 0
+*/
 int check_comma(tokenized_line *t){
-    int i;
-    char *curr_str = " ";
-    char *prev = " ";
-    int size_curr_str = 0;
-    int size_prev = 0;
+    int i, j;
+    int num_comma = 0;
+    int num_val = 0;
+    int has_comma_first;
+    int has_comma_between;
+    int has_comma_end;
+    int has_prev_comma = 0;
+    
+    char *curr_str = "";
+    char*prev_str = "";
+
     for (i = 0; i <= t->size; i++)
     {
-        prev = curr_str;
+        prev_str = curr_str;
         curr_str = t->tokens[i];
-        if(i == t->size){
-            curr_str = curr_str;
-            if(strcmp(curr_str, "") == 0){
-                if(strcmp(prev, ",") == 0 || prev[0] == ',' || prev[size_prev-1] == ','){
-                    return 0;
+        has_comma_first = 0;
+        has_comma_between = 0;
+        has_comma_end = 0;
+
+        for ( j = 0; j < strlen(curr_str); j++)
+        {
+            if(curr_str[j] == ','){
+                if(j == 0){
+                    has_comma_first = 1;
                 }
-                break;
+                else if(j == strlen(curr_str) - 1){
+                    has_comma_end = 1;
+                }else{
+                    has_comma_between = 1;
+                    num_val++;
+                }
+                num_comma++;
+                num_val++;
             }
         }
-        size_curr_str = strlen(curr_str);
-        size_prev = strlen(prev);
-        if(strcmp(curr_str, ",") == 0 || curr_str[0] == ',' || curr_str[size_curr_str-1] == ','){ /*if has comma after data or opcode */
-            if(is_opcode(prev) || (is_directive(prev) && strcmp(prev, ".data") == 0)){
+        if(strcmp(curr_str, ".data") == 0 || includes(opcode, NUM_OPCODES, curr_str)){
+            if(has_comma_first == 1){ /* comma after cmd opcode or data */
                 return 0;
             }
-            else if(prev[size_prev-1] == ','){ /*if has 2 commas in a row */
+        }
+        if(has_comma_first == 1){
+            if(strcmp(prev_str, ".data") == 0 || includes(opcode, NUM_OPCODES, prev_str)){  /* comma after cmd opcode or data */
+                return 0;    
+            }
+            else if(has_prev_comma == 1 ){ /* two commas in a row*/
                 return 0;
             }
-            else if(i+1 == t->size+1){  /*if has comma in the end of line */
+        }
+        
+        if(has_comma_end == 1 && i == t->size){ /*comma in the end of line*/
+            return 0;
+        }
+
+        if(strcmp(prev_str, "") != 0 && strcmp(prev_str, ".data") != 0 && (includes(opcode, NUM_OPCODES, prev_str) == 0) && (str_ends_with(prev_str, COLON) == 0)){
+            if( num_comma == 0 && has_prev_comma == 0){ /* no comma separate between values*/
+                return 0;
+            }
+            else if(has_comma_first == 0 && has_prev_comma == 0){/* no comma separate between values*/
                 return 0;
             }
             
         }
-        if(strcmp(prev, " ") != 0 && is_opcode(curr_str) == 0 && (is_directive(curr_str) == 0 || strcmp(curr_str, ".data") != 0)){ /*in case that no has commas to separate */
-            if( is_opcode(prev) == 0 && (is_directive(prev) == 0 || strcmp(prev, ".data") != 0)){  
-                if(strcmp(prev, ",") != 0 || prev[0] != ',' || prev[size_prev-1] != ','){
-                    if(strcmp(curr_str, ",") != 0 && (curr_str[0] != ',')  &&  prev[size_prev-1] != ','){
-                        return 0;
-                    }
-                }
-            }
+        if(has_comma_between == 1 && num_comma >= num_val){
+            return 0;
         }
+
+        if(has_comma_end == 1 || strcmp(curr_str, ",") == 0){  
+            has_prev_comma = 1; /* save if curr_str have a comma*/
+        }else{
+            has_prev_comma = 0;
+        }
+        num_comma = 0;
+    }
+    return 1;
+    
+}
+
+/*
+    check if name is legal and exist in symbol table.
+    return 1 if the name is correct, otherwise 0
+*/
+int check_name(symbol_table *table_of_symbol, int *has_error, char *string, int num){
+    
+    if(is_legal_name(string) == 0){
+        fprintf(stderr, "Line %d: Error! label %s is illegal!\n", num, string);
+        *has_error = 1;
+        return 0;
+    }
+    if(is_exist_in_symbol_table(table_of_symbol, string) == 0){
+        fprintf(stderr, "Line %d: Error! label %s already exists line!\n", num, string);
+        *has_error = 1;
+        return 0;
     }
     return 1;
 }
 
-/* get poiter to label and check if that label is legal .
-Function returns 1 if  label are legal, else return 0. */
-int is_legal_name(char *string){
+
+/* 
+    checks whenever the name is legal
+*/
+int is_legal_name(char *name){
     int i;
     int count = 0;
-    for (i = 0; i < strlen(string); i++)
+    for (i = 0; i < strlen(name); i++)
     {
        if(i == 0){ /* first char is upper or lower letter */
-            if (isupper(string[0]) || islower(string[0])){
+            if (isupper(name[0]) || islower(name[0])){
                 count++;
                 continue;
             }else{
                 return 0;
             }
         }
-        else if(isupper(string[i]) || islower(string[i]) || isdigit(string[i])){/*char are  upper or lower letteror numeric */
+        else if(isupper(name[i]) || islower(name[i]) || isdigit(name[i])){/*char are  upper or lower letteror numeric */
             count++;
            continue;
         }
-        else if(i+1 == strlen(string) && string[i] == ':'){ 
+        else if(i+1 == strlen(name) && name[i] == ':'){ 
             continue;
         }
         else{
@@ -966,46 +915,54 @@ int is_legal_name(char *string){
     if(count > MAX_CHAR){ /* check the length of label, max 31 chars*/
         return 0;
     }
-    if(is_opcode(string)){ /*if current label is equal to opcode name */
+    if(includes(opcode, NUM_OPCODES, name)){ /*if current label is equal to opcode name */
         return 0;
     }
-    if(is_register(string)){  /*if current label is equal to register name */
+    if(includes(registers, NUM_REGISTERS, name)){  /*if current label is equal to register name */
         return 0;
     }
-    if(is_directive(string)){  /*if current label is equal to guidance name */
+    if(is_directive(name)){  /*if current label is equal to guidance name */
         return 0;
     }
     return 1; 
 }
- 
-/* get poiter to string and check if that string are equal to char in registers array .
-Function returns 1 if  strings are equals, else return 0. */
-int is_register(char *string){
-    int i;
-    for (i = 0; i < 8; i++)
+/*  
+    return number of operands for given opcode if found
+    otherwise return 0
+*/
+int num_of_opcode_operands(char *opcode){
+    int i, j;
+    for ( i = 0; i < DIRECT_ADDRESS_OPERAND1; i++)
     {
-        if(strcmp(registers[i], string) == 0){
+        if(strcmp(direct_address_operand_1[i], opcode) == 0 ){
+            return 2;
+        }
+    }
+    for ( j = 0; j < NUM_OPERANDS; j++)
+    {   
+        if(strcmp(opcode_has_1operand[j], opcode) == 0){
             return 1;
         }
     }
     return 0;
 }
 
-/*get poiter to string and check if that string are equal to char in guidance array .
+
+/*get pointer to string and check if that string are equal to char in guidance array .
 Function returns 1 if  strings are equals, else return 0. */
 int is_directive(char *guidance_cmd){
     int i;
     char* line;
     if(str_begin_with(guidance_cmd, DOT)){
-        for (i = 0; i < 4; i++) /*fix the size of opcode array */
+        for (i = 0; i < NUM_GUIDANCE; i++) /*fix the size of opcode array */
         {
             if(strcmp(guidance[i], guidance_cmd) == 0){
                 return 1;
             }    
         }
     }
-    else{ /*  guidence_cmd dont have char dor at the begining string*/
-        for (i = 0; i < 4; i++)
+    else{ /*  guidence_cmd dont have char dot at the begining string*/
+        for (i = 0; i < NUM_GUIDANCE; i++)
         {   
             line = remove_dot(guidance[i]);
             if(strcmp(line, guidance_cmd) == 0){
@@ -1016,25 +973,14 @@ int is_directive(char *guidance_cmd){
     return 0;
 }
 
-/*get poiter to string and check if that string are equal to string in opcode array .
-Function returns 1 if  strings are equals, else return 0. */
-int is_opcode(char *code){
-    int i;
-    for (i = 0; i < 16; i++)
-    {
-        if(strcmp(opcode[i], code) == 0){
-            return 1;
-        }  
-    }
-    return 0;
-}
 
-/*get poiter to string and check if that string are equal to string in opcode array .
-returns pointer to string if strings are equals. */
-char* trans_opcode_to_binary(char *code){
+/*
+    return the binary representation of opcode
+*/
+char* translate_opcode_to_binary(char *code){
     int i;
     int num_opcode;
-     for (i = 0; i < 16; i++)
+     for (i = 0; i < NUM_OPCODES; i++)
     {
         if(strcmp(opcode[i], code) == 0){
             num_opcode = i;
@@ -1043,12 +989,13 @@ char* trans_opcode_to_binary(char *code){
     return opcode_to_binary[num_opcode];
 }
 
-/*get poiter to string and check if that string are equal to string in registers array .
-returns pointer to string if strings are equals. */
-char* trans_register_to_binary(char *code){ 
+/*
+    return the binary representation of register
+*/
+char* translate_register_to_binary(char *code){ 
     int i;   
     int num_opcode;
-     for (i = 0; i < 8; i++)
+     for (i = 0; i < NUM_REGISTERS; i++)
     {
         if(strcmp(registers[i], code) == 0){
             num_opcode = i;
@@ -1057,10 +1004,9 @@ char* trans_register_to_binary(char *code){
     return register_to_binary[num_opcode];
 }
 
-
-
-
-
+/*
+    Build .ob file based on the operation table and give IC & DC
+*/
 void build_object_file(FILE *output, table_of_operations* operations_table,int IC ,int DC){
     int i;
     int j;
@@ -1082,7 +1028,7 @@ void build_object_file(FILE *output, table_of_operations* operations_table,int I
                 special_address = convert_to_special(operations_table->rows[i]->binary_code_table->binary_code[j]);
                 fprintf(output, "0%d  %s\n", val, special_address);
                 free(special_address);
-                total_free++;
+                 
                 num_prev = val;
                 operations_table->rows[i]->decimal_table->decimal_address[j] = -1;
             } else {
@@ -1101,7 +1047,7 @@ void build_object_file(FILE *output, table_of_operations* operations_table,int I
                     special_address = convert_to_special(operations_table->rows[i]->binary_code_table->binary_code[j]);
                     fprintf(output, "0%d  %s\n", val, special_address);
                     free(special_address);
-                    total_free++;
+                     
                 }
             }
         }
