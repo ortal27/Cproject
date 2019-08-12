@@ -1,13 +1,14 @@
+; file test.as
 .entry LIST
 .extern W
-.define LL =   2
-MAIN:     cmp r3 , LIST[2]
+.define sz =   2
+MAIN:     cmp r3 , LIST[sz]
 LOOP:     jmp  W
-          prn  r1 
-          mov  STR[5] , r1
+          prn  #-5 
+          mov  STR[5] , STR[2]
           sub  r1 , r4    
-          cmp  K , #1
-          bne  END
+          cmp  K , #sz
+          bne  W
 L1:       inc  L3
 .entry LOOP
           bne   LOOP

@@ -29,40 +29,37 @@
 #define PERMAENT_INDEX_ADDRESS1 5
 #define PERMAENT_INDEX_ADDRESS2 11
 #define NUM_OPERANDS 9
+#define NUM_BITS_ADDRESS_INSTRUCTION 12
+#define NUM_BITS_ADDRESS_DIRECTIVE 14
+#define MAX_NUM_OPERANDS 2
+#define NUM_QUOTS 2
 
-
-
-const char *opcode[16]= {"mov", "cmp", "add", "sub", "not", "clr", "lea", "inc", "dec", "jmp", "bne", "red",
+const char *opcode[NUM_OPCODES]= {"mov", "cmp", "add", "sub", "not", "clr", "lea", "inc", "dec", "jmp", "bne", "red",
  "prn","jsr", "rts", "stop"};
 
-char *opcode_to_binary[16] = { "0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111", "1000", "1001","1010","1011", "1100", "1101", "1110", "1111"}; 
+char *opcode_to_binary[NUM_OPCODES] = { "0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111", "1000", "1001","1010","1011", "1100", "1101", "1110", "1111"}; 
 
-char *guidance[4] = {".data", ".string", ".entry", ".extern"};
+char *guidance[NUM_GUIDANCE] = {".data", ".string", ".entry", ".extern"};
 
-const char *registers[8] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
+const char *registers[NUM_REGISTERS] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
 
-char *register_to_binary[8] = { "000", "001", "010", "011", "100", "101", "110", "111"};
+char *register_to_binary[NUM_REGISTERS] = { "000", "001", "010", "011", "100", "101", "110", "111"};
 
-const char *immediate_address_operand_1[4] = {"mov", "cmp", "add", "sub"};
-const char *immediate_address_operand_2[2] = {"cmp", "prn"};
+const char *immediate_address_operand_1[IMMDIATE_ADDRESS_OPERAND1] = {"mov", "cmp", "add", "sub"};
+const char *immediate_address_operand_2[IMMDIATE_ADDRESS_OPERAND2] = {"cmp", "prn"};
 
-const char *direct_register_address_1[4] = {"mov", "cmp", "add", "sub"};
-const char *direct_register_address_2[14] = {"mov", "cmp", "add", "sub", "not", "clr", "lea", "inc", "dec", "jmp", "bne", "red", "prn","jsr"};
+const char *direct_register_address_1[DIRECT_REG_ADDRESS_OPERAND1] = {"mov", "cmp", "add", "sub"};
+const char *direct_register_address_2[DIRECT_REG_ADDRESS_OPERAND2] = {"mov", "cmp", "add", "sub", "not", "clr", "lea", "inc", "dec", "jmp", "bne", "red", "prn","jsr"};
 
-const char *direct_address_operand_1[5] = {"mov", "cmp", "add", "sub", "lea"};
-const char *direct_address_operand_2[14] = {"mov", "cmp", "add", "sub", "not", "clr", "lea", "inc", "dec", "jmp", "bne", "red", "prn","jsr"};
+const char *direct_address_operand_1[DIRECT_ADDRESS_OPERAND1] = {"mov", "cmp", "add", "sub", "lea"};
+const char *direct_address_operand_2[DIRECT_ADDRESS_OPERAND2] = {"mov", "cmp", "add", "sub", "not", "clr", "lea", "inc", "dec", "jmp", "bne", "red", "prn","jsr"};
 
-const char *permanent_index_address_operand_1[5] = {"mov", "cmp", "add", "sub", "lea"};
-const char *permanent_index_address_operand_2[11] = {"mov", "cmp", "add", "sub", "not", "clr", "lea", "inc", "dec", "red", "prn"};
+const char *permanent_index_address_operand_1[PERMAENT_INDEX_ADDRESS1] = {"mov", "cmp", "add", "sub", "lea"};
+const char *permanent_index_address_operand_2[PERMAENT_INDEX_ADDRESS2] = {"mov", "cmp", "add", "sub", "not", "clr", "lea", "inc", "dec", "red", "prn"};
 
-char *opcode_has_1operand[9] = {"not", "clr","inc", "dec", "jmp", "bne", "red", "prn","jsr"};
+char *opcode_has_1operand[NUM_OPERANDS] = {"not", "clr","inc", "dec", "jmp", "bne", "red", "prn","jsr"};
 
-/*******************************functions****************************************************/
-
-void print_to_stdout(int num, int *has_error, char *string){
-    
-}
-
+/***************************************functions****************************************************/
 
 /* 
     Get line from input file.
@@ -183,12 +180,12 @@ void update_missing_address(int *IC, tokenized_line *t, symbol_table *table_of_s
                 if(is_exist_in_symbol_table(table_of_symbol, curr) == 0){
                     if(is_extern(table_of_symbol, curr)){
                         into_are = "01";
-                        address_binary = int_to_binary(12, 0);
+                        address_binary = int_to_binary(NUM_BITS_ADDRESS_INSTRUCTION, 0);
                         fprintf(extern_output, "%s      0%d\n",  curr, *IC);
                     }else{
                         into_are = "10";
                         address_lebel = get_address(table_of_symbol, curr);
-                        address_binary = int_to_binary(12, address_lebel);
+                        address_binary = int_to_binary(NUM_BITS_ADDRESS_INSTRUCTION, address_lebel);
                     }
                     add_address_value(table, IC, address_binary, into_are);
                 }else{
@@ -202,12 +199,12 @@ void update_missing_address(int *IC, tokenized_line *t, symbol_table *table_of_s
                 if(is_exist_in_symbol_table(table_of_symbol, str) == 0){
                     if(is_extern(table_of_symbol, str)){
                         into_are = "01";
-                        address_binary = int_to_binary(12, 0);
+                        address_binary = int_to_binary(NUM_BITS_ADDRESS_INSTRUCTION, 0);
                         fprintf(extern_output, "%s      0%d\n", str, *IC);
                     }else{
                         into_are = "10";
                         address_lebel = get_address(table_of_symbol, str);
-                        address_binary = int_to_binary(12, address_lebel);
+                        address_binary = int_to_binary(NUM_BITS_ADDRESS_INSTRUCTION, address_lebel);
                     }
                     add_address_value(table, IC, address_binary, into_are);   
                 }else{
@@ -251,7 +248,7 @@ void instruction_handler(int *IC, tokenized_line *t, table_of_operations *table,
         if(strcmp(str, "") == 0){
             continue;
         }
-        if(num_of_operand > 2 || num_of_registers > 2){ /* in case that this line is illegal, more than 2 operands*/
+        if(num_of_operand > MAX_NUM_OPERANDS || num_of_registers > MAX_NUM_OPERANDS){ /* in case that this line is illegal, more than 2 operands*/
             fprintf(stderr, "Line %d: Error! too many operands in this line!\n", num);
             *has_error = 1;
             return;
@@ -303,7 +300,7 @@ void instruction_handler(int *IC, tokenized_line *t, table_of_operations *table,
             }
             num_of_operand++;
             num_of_registers++;
-            if(num_of_registers < 2){
+            if(num_of_registers < MAX_NUM_OPERANDS){
                 (*IC)++;
             }   
         }
@@ -480,7 +477,7 @@ void directive_handler(int *DC, tokenized_line *t, table_of_operations *table, s
             for (k = i; k <= t->size; k++)
             {
                 if(strcmp(t->tokens[k], "\n") == 0){
-                        continue;
+                    continue;
                 }
                 if(strcmp(t->tokens[k], "") == 0){
                    continue;
@@ -506,7 +503,7 @@ void directive_handler(int *DC, tokenized_line *t, table_of_operations *table, s
                      
                     continue;
                 }
-                if(strcmp(dest, "") == 0 && num_quot <2){
+                if(strcmp(dest, "") == 0 && num_quot < NUM_QUOTS){
                     code_binary = create_binary_code(NULL, NULL, NULL, NULL, dest);
                     b_table = create_binary_table_based_on_string(code_binary, dest, table_of_symbol);
                 }
@@ -524,7 +521,7 @@ void directive_handler(int *DC, tokenized_line *t, table_of_operations *table, s
                 data_line = create_operation_row(d_table, "", b_table);
                 add_row_to_table_of_operations(table, data_line);
                 (*DC)++; 
-                if(j == strlen(word) && num_quot == 2){
+                if(j == strlen(word) && num_quot == NUM_QUOTS){
                     flag_done = 1;
                 }
             } 
@@ -598,10 +595,10 @@ binary_code_table* create_binary_table_based_on_instruction(binary_code * code, 
             }
             temp = *curr_str;
             if(is_exist_in_symbol_table(table_of_symbol, curr_str) == 0){ 
-                address = int_to_binary(12, get_address(table_of_symbol, curr_str));
+                address = int_to_binary(NUM_BITS_ADDRESS_INSTRUCTION, get_address(table_of_symbol, curr_str));
                 code_binary = create_binary_code(NULL, NULL, NULL, "00",address);
             }else if(isdigit(temp)){
-                bin = int_to_binary(12, atoi(str+1));
+                bin = int_to_binary(NUM_BITS_ADDRESS_INSTRUCTION, atoi(str+1));
                 code_binary = create_binary_code(NULL, NULL, NULL, "00", bin);
             }
             else{
@@ -658,11 +655,11 @@ binary_code_table* create_binary_table_based_on_instruction(binary_code * code, 
                 }
                 temp = *index;
                 if(isdigit(temp)){
-                    bin = int_to_binary(12, atoi(index));
+                    bin = int_to_binary(NUM_BITS_ADDRESS_INSTRUCTION, atoi(index));
                     code_binary2 = create_binary_code(NULL, NULL, NULL, "00", bin);
                 }else{ /*is a symbol */
                     if(is_exist_in_symbol_table(table_of_symbol, index) == 0){
-                        address = int_to_binary(12, get_address(table_of_symbol, index));
+                        address = int_to_binary(NUM_BITS_ADDRESS_INSTRUCTION, get_address(table_of_symbol, index));
                         code_binary2 = create_binary_code(NULL, NULL, NULL, "00", address);
                     }else{
                         fprintf(stderr, "Line %d: Erorr! no such symbol %s.\n", num, index);
@@ -725,9 +722,9 @@ binary_code_table* create_binary_table_based_on_data(binary_code * code, tokeniz
         temp = *curr_str;
             
         if(isdigit(temp)){
-            bin = int_to_binary(14, atoi(str));
+            bin = int_to_binary(NUM_BITS_ADDRESS_DIRECTIVE, atoi(str));
         }else if(is_exist_in_symbol_table(table_of_symbol, str) == 0){ 
-            bin = int_to_binary(14, get_address(table_of_symbol, str));
+            bin = int_to_binary(NUM_BITS_ADDRESS_DIRECTIVE, get_address(table_of_symbol, str));
         }else{
             fprintf(stderr, "Line %d: Error! label %s is not exists.\n", num, str);
             *has_error = 1;
@@ -761,7 +758,7 @@ binary_code_table* create_binary_table_based_on_string(binary_code * code, char 
     b_table->size = 0;
    
     if(strcmp(str, "") == 0){ /* in case that we have empty char */
-        bin = int_to_binary(14, 32);
+        bin = int_to_binary(NUM_BITS_ADDRESS_DIRECTIVE, 32);
     }
     for (i = 0; i < strlen(str); i++)
     {
@@ -769,10 +766,10 @@ binary_code_table* create_binary_table_based_on_string(binary_code * code, char 
             continue;
         }
         if(isalpha(str[0])){
-            bin = int_to_binary(14, (int)str[0]);
+            bin = int_to_binary(NUM_BITS_ADDRESS_DIRECTIVE, (int)str[0]);
         }
         if(strcmp(str, "0") == 0){ /* in case that tise is the end of string-> '\0' */
-            bin = int_to_binary(14, 0);
+            bin = int_to_binary(NUM_BITS_ADDRESS_DIRECTIVE, 0);
         }
     }        
     free(str);

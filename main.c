@@ -30,10 +30,10 @@ int main(int argc, char* argv[]){
 
 /* parse the given file as assembler file */
 void parse(char* path) {
-    int d = 0;
-    int a = 100;
-    int b = 0;
-    int c = 100;
+    int init_IC = 100;
+    int init_DC = 0;
+    int init_decimal_address = 100;
+    int init_sec_IC = 100;
     int ex = 0;
     int ent = 0; 
     int *size;
@@ -57,9 +57,9 @@ void parse(char* path) {
     operations_table = new_operations_table();
     table_of_symbols = new_symbol_table();
 
-    IC = &a;
-    DC = &b;
-    da = &c;
+    IC = &init_IC;
+    DC = &init_DC;
+    da = &init_decimal_address;
     
     has_error = &temp;
     has_entry = &ent;
@@ -95,10 +95,8 @@ void parse(char* path) {
     update_values(table_of_symbols, IC); 
 
     change_decimal_address_val(operations_table, da);
-
-    d = 100;
     
-    IC = &d; 
+    IC = &init_sec_IC; 
 
     if (*has_extern == 1) {
         extern_output = open_file(path, "ext", "w");
@@ -127,7 +125,6 @@ void parse(char* path) {
         }
     }
     (*IC)++;
-    print_table_of_operations(operations_table);
 
     if(*has_error != 1){
         output = open_file(path, "ob", "w");

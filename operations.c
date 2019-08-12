@@ -4,6 +4,7 @@
 
 #include "operations.h"
 
+#define NUM_BITS 14
 
 /*
     Contruct operation row
@@ -133,11 +134,9 @@ void print_table_of_operations(table_of_operations *table_of_operations){
             special_str = convert_to_special(table_of_operations->rows[i]->binary_code_table->binary_code[j]);
             decimal_addr = table_of_operations->rows[i]->decimal_table->decimal_address[j];
             printf("Decimal Addr: %d  -- Binary Machine Code: %s - %s\n", decimal_addr, code, special_str);
-            free(code);
-             
+            free(code);     
 
-            free(special_str);
-             
+            free(special_str);     
         }
      }
 }
@@ -208,7 +207,7 @@ char* convert_to_special(binary_code *code){
      
 
 
-    for (i = 0; i < 14; i += 2)
+    for (i = 0; i < NUM_BITS; i += 2)
     {
         l = i/2;
         a = (char*)malloc(sizeof(char));
